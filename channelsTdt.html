@@ -1369,14 +1369,8 @@
             if (!document.fullscreenElement) return;
             if (e.target.closest('.quality-popup-menu, .sidebar, .mobile-menu-btn, .controls-overlay, .player-header')) return;
 
-            if (playerWrapper.classList.contains('hide-controls')) {
-                playerWrapper.classList.remove('hide-controls');
-                showControlsTemporarily();
-            } else {
-                playerWrapper.classList.add('hide-controls');
-                if (qualityPopupMenu) qualityPopupMenu.classList.remove('show');
-                clearTimeout(controlsTimeout);
-            }
+            playerWrapper.classList.remove('hide-controls');
+            showControlsTemporarily();
         }
 
         playerWrapper.addEventListener('click', handleFullscreenTouch);
