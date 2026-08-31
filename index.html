@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Canales Televisión</title>
+
+    <link rel="icon" type="image/png" href="logo.png?v=1">
+
+    <!-- Hls.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #0f0f11;
+            color: #f1f1f1;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            height: 100dvh;
+            width: 100vw;
+            /* NO SELECCIONAR NADA */
+            -webkit-user-select: none;
+            /* Safari */
+            -moz-user-select: Firefox;
+            /* Firefox */
+            -ms-user-select: none;
+            /* Internet Explorer/Edge */
+            user-select: none;
+            /* Estándar moderno */
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            height: 100dvh;
+            width: 100vw;
+            position: relative;
+            flex-direction: row;
+        }
+
+        /* LOGO ESTILO  */
+        .sidebar-brand img {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
+            max-width: 100%;
+        }
+
+        /* BOTÓN MENÚ MÓVIL (HAMBURGUESA) */
+        .mobile-menu-btn {
+            display: none;
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 40;
+            background: rgba(15, 15, 17, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            width: 44px;
+            height: 44px;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .mobile-menu-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: #fff;
+        }
+
+        /* OVERLAY PARA CERRAR EL MENÚ EN MÓVIL */
+        .sidebar-overlay {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 25;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar-overlay.show {
+            opacity: 1;
+        }
+
+        /* BARRA LATERAL IZQUIERDA */
+        .sidebar {
+            width: 340px;
+            background: rgba(18, 18, 22, 0.95);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            flex-direction: column;
+            z-index: 30;
+            flex-shrink: 0;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar-header {
+            padding: 24px 20px 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            font-size: 1.25rem;
+            letter-spacing: -0.5px;
+            color: #fff;
+            margin-bottom: 18px;
+        }
+
+        .sidebar-brand svg {
+            fill: #e50914;
+            width: 26px;
+            height: 26px;
+        }
+
+        .search-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            width: 16px;
+            height: 16px;
+            fill: #8e8e93;
+            pointer-events: none;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 10px 14px 10px 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.88rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .search-box:focus {
+            border-color: #e50914;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 12px rgba(229, 9, 20, 0.35);
+        }
+
+        .channel-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .channel-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .channel-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
+        }
+
+        .channel-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            background: transparent;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .channel-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .channel-item.active {
+            background: rgba(229, 9, 20, 0.12);
+            border-color: rgba(229, 9, 20, 0.4);
+            box-shadow: inset 0 0 12px rgba(229, 9, 20, 0.35);
+        }
+
+        .channel-logo {
+            width: 50px;
+            height: 50px;
+            min-width: 50px;
+            min-height: 50px;
+            border-radius: 8px;
+            object-fit: contain;
+            /* Cambiado de cover a contain para que no se recorte */
+            padding: 4px;
+            /* Un pequeño respiro para que la imagen no pegue a los bordes */
+            background: #1a1a1f;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            flex-shrink: 0;
+        }
+
+        .channel-details {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            overflow: hidden;
+        }
+
+        .channel-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #f1f1f1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .channel-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #e50914;
+            letter-spacing: 0.5px;
+        }
+
+        .live-dot {
+            width: 6px;
+            height: 6px;
+            background-color: #e50914;
+            border-radius: 50%;
+            box-shadow: 0 0 6px #e50914;
+        }
+
+        /* ÁREA PRINCIPAL */
+        .main-content {
+            flex: 1;
+            display: flex;
+            position: relative;
+            background: #000;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .player-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .player-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px 24px;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.85) 0%, transparent 100%);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+        }
+
+        .player-channel-logo {
+            width: 50px;
+            height: 50px;
+            min-width: 50px;
+            min-height: 50px;
+            border-radius: 8px;
+            object-fit: contain;
+            /* Cambiado de cover a contain para que no se recorte */
+            padding: 4px;
+            /* Un pequeño respiro para que la imagen no pegue a los bordes */
+            background: #1a1a1f;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            flex-shrink: 0;
+        }
+
+        .player-channel-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .player-channel-name {
+            font-size: 1.05rem;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .controls-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(0deg, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.6) 70%, transparent 100%);
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+            z-index: 20;
+        }
+
+        .live-progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .live-progress-fill {
+            width: 100%;
+            height: 100%;
+            background: #e50914 !important;
+            box-shadow: 0 0 8px #e50914;
+        }
+
+        .controls-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .left-controls,
+        .right-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-control {
+            background: transparent;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            transition: background 0.2s ease, transform 0.1s ease;
+            flex-shrink: 0;
+        }
+
+        .btn-control:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.05);
+        }
+
+        .btn-control svg {
+            width: 22px;
+            height: 22px;
+            fill: #fff;
+        }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #e50914;
+            background: rgba(229, 9, 20, 0.15);
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(229, 9, 20, 0.3);
+            white-space: nowrap;
+        }
+
+        /* MENÚ DE CALIDAD */
+        .quality-menu-container {
+            position: relative;
+        }
+
+        .quality-popup-menu {
+            position: absolute;
+            bottom: 50px;
+            right: 0;
+            background: rgba(20, 20, 24, 0.96);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 8px 0;
+            width: 290px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85);
+            display: none;
+            flex-direction: column;
+            z-index: 50;
+        }
+
+        .quality-popup-menu.show {
+            display: flex;
+        }
+
+        .quality-option {
+            display: flex;
+            align-items: center;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.85);
+            transition: background 0.15s ease;
+            gap: 8px;
+        }
+
+        .quality-option:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+        }
+
+        .quality-check {
+            width: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #fff;
+            visibility: hidden;
+        }
+
+        .quality-option.selected .quality-check {
+            visibility: visible;
+            color: #e50914;
+        }
+
+        .quality-option.selected {
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .quality-title-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .quality-badge {
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: #e50914;
+            letter-spacing: 0.5px;
+        }
+
+        .quality-details-text {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 400;
+            margin-left: auto;
+        }
+
+        .buffer-health-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #ffffff;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 4px 8px;
+            border-radius: 4px;
+            user-select: none;
+        }
+
+        .buffer-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: #28a745;
+            box-shadow: 0 0 6px #28a745;
+            transition: background-color 0.3s ease;
+        }
+
+        .buffer-dot.low {
+            background-color: #dc3545;
+            box-shadow: 0 0 6px #dc3545;
+        }
+
+        /* ESTADOS DE VISIBILIDAD DINÁMICA (SOLO EN PANTALLA COMPLETA O CUANDO ESTÁ ACTIVO EL HOVER EN NORMAL) */
+        .player-wrapper.in-fullscreen.hide-controls .controls-overlay,
+        .player-wrapper.in-fullscreen.hide-controls .player-header,
+        .player-wrapper.in-fullscreen.hide-controls #qualityPopupMenu,
+        .player-wrapper.normal-autohide .controls-overlay,
+        .player-wrapper.normal-autohide .player-header,
+        .player-wrapper.normal-autohide #qualityPopupMenu {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+
+        .player-wrapper.in-fullscreen.hide-controls,
+        .player-wrapper.normal-autohide {
+            cursor: none !important;
+        }
+
+        .volume-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            z-index: 50;
+        }
+
+        .volume-slider-container {
+            max-width: 0;
+            opacity: 0;
+            overflow: visible !important;
+            /* Cambiado para que no corte la bolita */
+            transition: max-width 0.3s ease, opacity 0.3s ease;
+            display: flex;
+            align-items: center;
+            background: rgba(20, 20, 24, 0.9);
+            border-radius: 20px;
+            padding: 0;
+            z-index: 70;
+        }
+
+        .volume-slider-container.show {
+            max-width: 90px;
+            opacity: 1;
+        }
+
+        .volume-wrapper:hover .volume-slider-container,
+        .volume-wrapper:focus-within .volume-slider-container,
+        .volume-slider-container.show {
+            max-width: 90px;
+            opacity: 1;
+        }
+
+        .volume-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 70px;
+            height: 6px;
+            border-radius: 20px;
+            outline: none;
+            border: none;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.3);
+            overflow: visible;
+        }
+
+        .volume-slider::-webkit-slider-runnable-track {
+            height: 6px;
+            border-radius: 20px;
+            background: transparent;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            box-shadow: 0 0 4px rgba(0, 0, 0, 0.6);
+            position: relative;
+            z-index: 99;
+            margin-top: -4px;
+            /* Centra perfectamente la bolita sobre la línea de 6px */
+        }
+
+        /* ESTILOS PARA EL BOTÓN "MÁS CANALES" */
+        .more-channels-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 11px 16px;
+            margin-bottom: 14px;
+            background: linear-gradient(135deg, #e50914 0%, #b20710 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(229, 9, 20, 0.3);
+        }
+
+        .more-channels-btn:hover {
+            background: linear-gradient(135deg, #f6121d 0%, #c50812 100%);
+            box-shadow: 0 6px 16px rgba(229, 9, 20, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .more-channels-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: #fff;
+            flex-shrink: 0;
+        }
+
+
+        /* ADAPTACIÓN MÓVIL OPTIMIZADA */
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: absolute;
+                top: clamp(10px, 3vw, 20px);
+                right: clamp(10px, 4vw, 24px);
+                left: auto;
+                z-index: 10000;
+            }
+
+            .mobile-menu-btn svg {
+                width: 24px;
+                height: 24px;
+                position: absolute;
+                transition: opacity 0.25s ease, transform 0.25s ease;
+            }
+
+            .mobile-menu-btn svg {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            .sidebar.mobile-open~.app-container .mobile-menu-btn .hamburger-icon,
+            .mobile-menu-btn.is-active .hamburger-icon {
+                display: none !important;
+            }
+
+            .sidebar.mobile-open~.app-container .mobile-menu-btn .close-icon,
+            .mobile-menu-btn.is-active .close-icon {
+                display: block !important;
+            }
+
+            .sidebar-overlay {
+                display: block;
+                pointer-events: none;
+            }
+
+            .sidebar-overlay.show {
+                pointer-events: auto;
+            }
+
+            .sidebar {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                transform: translateX(-100%);
+                width: 85%;
+                max-width: 320px;
+                box-shadow: 10px 0 30px rgba(0, 0, 0, 0.7);
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                width: 100vw;
+                height: 100vh;
+                height: 100dvh;
+            }
+
+            .controls-overlay {
+                padding: 10px 12px 14px 12px;
+            }
+
+            .player-header {
+                padding: 14px 14px 14px 65px;
+            }
+
+            .left-controls,
+            .right-controls {
+                gap: 6px;
+            }
+
+            .buffer-health-tag {
+                display: none;
+            }
+
+            .volume-slider-container {
+                display: none !important;
+            }
+
+            .main-content.mobile-landscape-fullscreen {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                height: 100dvh !important;
+                z-index: 99999 !important;
+                transform: rotate(90deg) !important;
+                transform-origin: center center !important;
+            }
+
+            .player-wrapper.mobile-show-controls .controls-overlay,
+            .player-wrapper.mobile-show-controls .player-header,
+            .player-wrapper.mobile-show-controls #qualityPopupMenu {
+                opacity: 1 !important;
+                visibility: visible !important;
+                pointer-events: auto !important;
+            }
+
+            .quality-popup-menu {
+                width: 250px;
+                right: 0;
+                bottom: 45px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app-container">
+
+        <button class="mobile-menu-btn" id="mobileMenuBtn" title="Abrir Canales">
+            <!-- Icono de Hamburguesa (Visible por defecto) -->
+            <svg viewBox="0 0 24 24">
+                <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+            </svg>
+            <!-- Icono de X / Cerrar (Oculto por defecto) -->
+            <svg class="close-icon" viewBox="0 0 24 24" style="display:none;">
+                <path
+                    d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+            </svg>
+        </button>
+
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <img src="logo.png?v=1" alt="Canal Tv Logo">
+                    <span>Canales Televisión</span>
+                </div>
+
+                <!-- BOTÓN "MÁS CANALES" -->
+                <a href="channelsTdt.html" class="more-channels-btn">
+                    <svg viewBox="0 0 24 24">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" />
+                    </svg>
+                    Canales Adicionales
+                </a>
+
+                <div class="search-container">
+                    <svg class="search-icon" viewBox="0 0 24 24">
+                        <path
+                            d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                    </svg>
+                    <input type="text" class="search-box" id="searchBox" placeholder="Buscar canal..." tabindex="0">
+                </div>
+            </div>
+            <div class="channel-list" id="channelList"></div>
+        </aside>
+
+        <main class="main-content">
+            <div class="player-wrapper" id="playerWrapper">
+
+                <div class="player-header">
+                    <img src="" id="playerChannelLogo" class="player-channel-logo" alt="Logo Canal">
+                    <div class="player-channel-info">
+                        <span class="player-channel-name" id="playerChannelName">Selecciona un canal</span>
+                        <span class="channel-badge"><span class="live-dot"></span> EN VIVO</span>
+                    </div>
+                </div>
+
+                <video id="videoPlayer" autoplay muted playsinline></video>
+
+                <div class="controls-overlay">
+                    <div class="live-progress-bar">
+                        <div class="live-progress-fill"></div>
+                    </div>
+
+                    <div class="controls-bottom">
+                        <div class="left-controls">
+                            <button class="btn-control" id="playStopBtn" title="Play / Stop">
+                                <svg id="playIcon" viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z" />
+                                </svg>
+                                <svg id="stopIcon" viewBox="0 0 24 24" style="display:none;">
+                                    <path d="M6 6h12v12H6z" />
+                                </svg>
+                            </button>
+
+                            <div class="volume-wrapper">
+                                <button class="btn-control" id="volumeBtn" title="Silenciar">
+                                    <!-- Arreglado: Como arranca muteado, se muestra el icono de Mute y se oculta el de Volumen alto -->
+                                    <svg id="volumeHighIcon" viewBox="0 0 24 24" style="display:none;">
+                                        <path
+                                            d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                                    </svg>
+                                    <svg id="volumeMuteIcon" viewBox="0 0 24 24">
+                                        <path
+                                            d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
+                                    </svg>
+                                </button>
+
+                                <div class="volume-slider-container">
+                                    <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1"
+                                        step="0.01" value="0">
+                                </div>
+                            </div>
+
+                            <div class="live-indicator">
+                                <span class="live-dot"></span> DIRECTO
+                            </div>
+                        </div>
+
+                        <div class="right-controls">
+                            <div id="bufferHealth" class="buffer-health-tag">
+                                <span class="buffer-dot"></span>
+                                <span id="bufferValue">Buffer: 0.0s</span>
+                            </div>
+
+                            <div class="quality-menu-container">
+                                <button class="btn-control" id="qualityBtn" title="Calidad">
+                                    <svg viewBox="0 0 24 24">
+                                        <path
+                                            d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c-.5.38 1.03.7 1.62.94l.36 2.54c-.05.24.24.41.48.41h3.84c-.24 0 .43-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6-3.6z" />
+                                    </svg>
+                                </button>
+                                <div class="quality-popup-menu" id="qualityPopupMenu"></div>
+                            </div>
+
+                            <button class="btn-control" id="fullscreenBtn" title="Pantalla Completa">
+                                <svg viewBox="0 0 24 24">
+                                    <path
+                                        d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+    </div>
+
+    <script>
+        const channels = [
+            {
+                name: "Latina",
+                logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRQ8lodob3N-JjY00vl8DGU77HiFNHXrcENpydoxjY9Rg&s=10",
+                url: "https://redirector.rudo.video/hls-video/567ffde3fa319fadf3419efda25619456231dfea/latina/latina.smil/playlist.m3u8"
+            },
+            {
+                name: "ATV",
+                logo: "https://upload.wikimedia.org/wikipedia/commons/9/9d/ATV_%28Peru%29_-_2018_logo.png",
+                url: "https://d19e55ehz2il4i.cloudfront.net/ts:abr.m3u8"
+            },
+            {
+                name: "America TV",
+                logo: "https://yt3.googleusercontent.com/KRDAxhSJVhhRP7SACB06iIg7xczMDUur1iGWVlvAJ4XkxRCkY1qFOVqVo02bsnh7W1c9HjNA=s900-c-k-c0x00ffffff-no-rj",
+                url: "https://live-bd1.tv360.bitel.com.pe/manifest/america/master_clean_source.m3u8"
+            },
+            {
+                name: "El Chavo",
+                logo: "https://gia.tv/streams/pptv/211465.png",
+                url: "https://live20.bozztv.com/giatvplayout7/giatv-211465/playlist.m3u8"
+            },
+
+
+        ];
+
+        const video = document.getElementById('videoPlayer');
+        const playStopBtn = document.getElementById('playStopBtn');
+        const playIcon = document.getElementById('playIcon');
+        const stopIcon = document.getElementById('stopIcon');
+        const qualityBtn = document.getElementById('qualityBtn');
+        const qualityPopupMenu = document.getElementById('qualityPopupMenu');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const channelListContainer = document.getElementById('channelList');
+        const searchBox = document.getElementById('searchBox');
+        const playerWrapper = document.getElementById('playerWrapper');
+        const playerChannelLogo = document.getElementById('playerChannelLogo');
+        const playerChannelName = document.getElementById('playerChannelName');
+
+        const volumeBtn = document.getElementById('volumeBtn');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeHighIcon = document.getElementById('volumeHighIcon');
+        const volumeMuteIcon = document.getElementById('volumeMuteIcon');
+
+        const bufferValue = document.getElementById('bufferValue');
+        const bufferDot = document.querySelector('.buffer-dot');
+
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        let hls = null;
+        let currentChannel = null;
+        let controlsTimeout = null;
+
+        let channelLoadTimeout = null; //ERROR CONEXION 
+
+        const TIEMPO_OCULTAR_CONTROLES = 2500;
+
+        // CREACIÓN DINÁMICA DEL AVISO DE ERROR EN PANTALLA
+        const errorOverlay = document.createElement('div');
+        errorOverlay.id = 'channelErrorOverlay';
+        errorOverlay.style.position = 'absolute';
+        errorOverlay.style.top = '0';
+        errorOverlay.style.left = '0';
+        errorOverlay.style.width = '100%';
+        errorOverlay.style.height = '100%';
+        errorOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.85)';
+        errorOverlay.style.color = '#ff3333';
+        errorOverlay.style.display = 'flex';
+        errorOverlay.style.flexDirection = 'column';
+        errorOverlay.style.alignItems = 'center';
+        errorOverlay.style.justifyContent = 'center';
+        errorOverlay.style.fontFamily = 'sans-serif';
+        errorOverlay.style.zIndex = '50';
+        errorOverlay.style.opacity = '0';
+        errorOverlay.style.pointerEvents = 'none';
+        errorOverlay.style.transition = 'opacity 0.3s ease';
+        errorOverlay.innerHTML = `
+            <svg viewBox="0 0 24 24" style="width: 48px; height: 48px; fill: #ff3333; margin-bottom: 10px;">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
+            <span style="font-size: 16px; font-weight: bold; color: #fff; text-align: center; padding: 0 20px;">ERROR AL CONECTAR AL SERVIDOR</span>
+            <span style="font-size: 13px; color: #aaa; margin-top: 5px;">El canal no responde o no está disponible.</span>
+        `;
+        playerWrapper.style.position = 'relative'; // Asegura posicionamiento para el overlay
+        playerWrapper.appendChild(errorOverlay);
+
+        function mostrarErrorServidor() {
+            errorOverlay.style.opacity = '1';
+            errorOverlay.style.pointerEvents = 'auto';
+        }
+
+        function ocultarErrorServidor() {
+            errorOverlay.style.opacity = '0';
+            errorOverlay.style.pointerEvents = 'none';
+        }
+
+        //FUNCIONAMIENTO
+        function renderChannels(filter = "") {
+            channelListContainer.innerHTML = "";
+            const filtered = channels.filter(c => c.name.toLowerCase().includes(filter.toLowerCase()));
+
+            filtered.forEach((channel) => {
+                const item = document.createElement('div');
+                const isActive = currentChannel && currentChannel.url === channel.url;
+                item.className = `channel-item ${isActive ? 'active' : ''}`;
+                item.innerHTML = `
+                <img class="channel-logo" src="${channel.logo}" alt="${channel.name}" />
+                <div class="channel-details">
+                    <span class="channel-title">${channel.name}</span>
+                    <span class="channel-badge"><span class="live-dot"></span> EN VIVO</span>
+                </div>
+            `;
+
+                item.addEventListener('click', () => {
+                    loadChannel(channel);
+                    document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
+                    item.classList.add('active');
+                    closeMobileSidebar();
+                });
+
+                channelListContainer.appendChild(item);
+            });
+        }
+
+        function toggleMobileSidebar() {
+            sidebar.classList.toggle('mobile-open');
+            sidebarOverlay.classList.toggle('show');
+        }
+
+        function closeMobileSidebar() {
+            sidebar.classList.remove('mobile-open');
+            sidebarOverlay.classList.remove('show');
+        }
+
+        mobileMenuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('mobile-open');
+            if (overlay) overlay.classList.toggle('show');
+
+            // Cambia el icono con una transición más limpia
+            if (sidebar.classList.contains('mobile-open')) {
+                mobileMenuBtn.innerHTML = `<svg viewBox="0 0 24 24" style="opacity: 0; transform: scale(0.7);"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" /></svg>`;
+            } else {
+                mobileMenuBtn.innerHTML = `<svg viewBox="0 0 24 24" style="opacity: 0; transform: scale(0.7);"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" /></svg>`;
+            }
+
+            // Fuerza la animación de entrada al siguiente ciclo de renderizado
+            requestAnimationFrame(() => {
+                const svgInside = mobileMenuBtn.querySelector('svg');
+                if (svgInside) {
+                    svgInside.style.opacity = '1';
+                    svgInside.style.transform = 'scale(1)';
+                }
+            });
+        });
+
+        sidebarOverlay.addEventListener('click', () => {
+            closeMobileSidebar();
+        });
+
+        function loadChannel(channel) {
+            currentChannel = channel;
+            qualityPopupMenu.classList.remove('show');
+            playerChannelLogo.src = channel.logo;
+            playerChannelName.textContent = channel.name;
+
+            // Limpiamos errores anteriores y activamos el temporizador de 6 segundos
+            ocultarErrorServidor();
+            if (channelLoadTimeout) clearTimeout(channelLoadTimeout);
+
+            channelLoadTimeout = setTimeout(() => {
+                // Si tras 6 segundos el video sigue sin reproducir o cargando, lanzamos el error
+                if (video.paused || video.readyState < 2) {
+                    mostrarErrorServidor();
+                }
+            }, 6000);
+
+            if (hls) hls.destroy();
+
+            if (Hls.isSupported()) {
+                hls = new Hls({
+                    // --- Control de Búfer (Estable entre 5s y 10s) ---
+                    maxBufferLength: 5,           // Intenta mantener siempre un búfer base de 5 segundos
+                    maxMaxBufferLength: 10,       // Permite acumular como máximo 10 segundos antes de dejar de descargar
+
+                    // --- Control de Retraso / Latencia en Vivo (Alineados al nuevo búfer) ---
+                    liveSyncDurationCount: 3,     // Se mantiene sincronizado a una distancia segura de 3 segmentos
+                    liveMaxLatencyDurationCount: 6, // Permite tolerar hasta 6 segmentos de retraso máximo antes de recortar
+
+                    // --- Rendimiento y Red ---
+                    lowLatencyMode: true,
+                    enableWorker: true,
+                    manifestLoadingTimeOut: 10000,
+                    manifestLoadingMaxRetry: 5,
+                    levelLoadingTimeOut: 10000,
+                    levelLoadingMaxRetry: 5,
+                    fragLoadingTimeOut: 10000,
+                    fragLoadingMaxRetry: 6
+                });
+
+                hls.loadSource(channel.url);
+                hls.attachMedia(video);
+
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    video.play().then(() => {
+                        updatePlayState(true);
+                    }).catch((err) => {
+                        console.log("Auto play bloqueado por el navegador:", err);
+                    });
+                    setupQualityMenu();
+                });
+
+                // Si empieza a reproducir de forma exitosa, cancelamos el aviso de error
+                video.addEventListener('playing', () => {
+                    ocultarErrorServidor();
+                    if (channelLoadTimeout) clearTimeout(channelLoadTimeout);
+                }, { once: true });
+
+                hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
+                    // Si está en automática, actualizamos el texto dinámico de los Mbps y resolución
+                    const autoDetailsText = document.getElementById('autoDetailsText');
+                    if (autoDetailsText && hls.autoLevelEnabled) {
+                        const lvl = hls.levels[data.level];
+                        if (lvl) {
+                            autoDetailsText.innerText = `${lvl.height}p (${(lvl.bitrate / 1000000).toFixed(1)} Mbps)`;
+                        }
+                    }
+                });
+
+
+
+                hls.on(Hls.Events.ERROR, (event, data) => {
+                    if (data.fatal) {
+                        switch (data.type) {
+                            case Hls.ErrorTypes.NETWORK_ERROR:
+                                hls.startLoad();
+                                break;
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                hls.recoverMediaError();
+                                break;
+                            default:
+                                loadChannel(channel);
+                                break;
+                        }
+                    }
+                });
+
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = channel.url;
+                video.addEventListener('loadedmetadata', () => {
+                    video.play().then(() => {
+                        updatePlayState(true);
+                    }).catch(() => { });
+                });
+            }
+        }
+
+        function updatePlayState(isPlaying) {
+            playIcon.style.display = isPlaying ? 'none' : 'block';
+            stopIcon.style.display = isPlaying ? 'block' : 'none';
+        }
+
+        function formatLevelDetails(level) {
+            const bitrateStr = level.bitrate ? `(${(level.bitrate / 1000000).toFixed(2)} Mbps` : '';
+            const fpsStr = level.frameRate ? ` ${Math.round(level.frameRate)} fps)` : (bitrateStr ? ')' : '');
+            return `${bitrateStr}${fpsStr}`;
+        }
+
+        function updateAutoText(currentLevelIndex) {
+            const autoDetailsSpan = document.getElementById('autoQualityDetails');
+            if (!autoDetailsSpan || !hls || !hls.levels[currentLevelIndex]) return;
+            const lvl = hls.levels[currentLevelIndex];
+            const kbps = lvl.bitrate ? Math.round(lvl.bitrate / 1000) : 0;
+            autoDetailsSpan.textContent = `(${lvl.height}p ${kbps} Kbps)`;
+        }
+
+        function setupQualityMenu() {
+            qualityPopupMenu.innerHTML = "";
+            if (!hls || !hls.levels || hls.levels.length === 0) return;
+
+            // Función interna para calcular el texto actual del modo automática
+            const getAutoDetailsText = () => {
+                const activeLevelIndex = hls.autoLevelEnabled ? (hls.currentLevel !== -1 ? hls.currentLevel : hls.loadLevel) : hls.loadLevel;
+                if (activeLevelIndex !== -1 && hls.levels[activeLevelIndex]) {
+                    const lvl = hls.levels[activeLevelIndex];
+                    return `${lvl.height}p (${(lvl.bitrate / 1000000).toFixed(1)} Mbps)`;
+                } else if (hls.firstLevel !== undefined && hls.levels[hls.firstLevel]) {
+                    const lvl = hls.levels[hls.firstLevel];
+                    return `${lvl.height}p (${(lvl.bitrate / 1000000).toFixed(1)} Mbps)`;
+                }
+                return "Dinámico";
+            };
+
+            const optionElements = [];
+
+            // --- OPCIÓN AUTOMÁTICA ---
+            // SPAN AUTO <span class="quality-badge" style="color: #e50914; background: rgba(229, 9, 20, 0.15); padding: 1px 5px; border-radius: 4px;">Auto</span>
+            const autoOption = document.createElement('div');
+            autoOption.className = `quality-option ${hls.autoLevelEnabled ? 'selected' : ''}`;
+            autoOption.innerHTML = `
+        <span class="quality-check">✓</span>
+        <div class="quality-title-group">
+            <span>Automática</span>
+        </div>
+        <span class="quality-details-text" id="autoDetailsText">${getAutoDetailsText()}</span>
+    `;
+
+            autoOption.addEventListener('click', () => {
+                hls.currentLevel = -1; // Activa el modo automáticA en HLS.js
+
+                // Cambio visual instantáneo (fondo y check)
+                optionElements.forEach(el => el.classList.remove('selected'));
+                autoOption.classList.add('selected');
+
+                // Actualización inmediata del texto dinámico al hacer clic
+                const autoDetails = document.getElementById('autoDetailsText');
+                if (autoDetails) {
+                    autoDetails.innerText = getAutoDetailsText();
+                }
+            });
+
+            qualityPopupMenu.appendChild(autoOption);
+            optionElements.push(autoOption);
+
+            // --- LISTA DE CALIDADES ORDENADAS ---
+            const sortedLevels = [...hls.levels].map((level, originalIndex) => ({ level, originalIndex }));
+
+            sortedLevels.sort((a, b) => {
+                const heightDiff = (b.level.height || 0) - (a.level.height || 0);
+                if (heightDiff !== 0) return heightDiff;
+                return (b.level.bitrate || 0) - (a.level.bitrate || 0);
+            });
+
+            sortedLevels.forEach(({ level, originalIndex }) => {
+                const height = level.height || 0;
+                let resolutionBadge = "";
+
+                if (height >= 1080) {
+                    resolutionBadge = '<span class="quality-badge" style="color: #ff1a1a; background: rgba(255, 26, 26, 0.2); padding: 1px 6px; border-radius: 4px; font-weight: 800; border: 1px solid rgba(255, 26, 26, 0.4);">FHD</span>';
+                } else if (height >= 720) {
+                    resolutionBadge = '<span class="quality-badge" style="color: #e50914; background: rgba(229, 9, 20, 0.15); padding: 1px 5px; border-radius: 4px;">HD</span>';
+                }
+
+                const mbps = ((level.bitrate || 0) / 1000000).toFixed(1);
+
+                const option = document.createElement('div');
+                const isSelected = !hls.autoLevelEnabled && hls.currentLevel === originalIndex;
+                option.className = `quality-option ${isSelected ? 'selected' : ''}`;
+
+                option.innerHTML = `
+            <span class="quality-check">✓</span>
+            <div class="quality-title-group">
+                <span>${height}p</span>
+                ${resolutionBadge}
+            </div>
+            <span class="quality-details-text">${mbps} Mbps</span>
+        `;
+
+                option.addEventListener('click', () => {
+                    hls.currentLevel = originalIndex; // Fija la calidad manual
+
+                    // Cambio visual instantáneo (fondo y check)
+                    optionElements.forEach(el => el.classList.remove('selected'));
+                    option.classList.add('selected');
+                });
+
+                qualityPopupMenu.appendChild(option);
+                optionElements.push(option);
+            });
+        }
+
+        function updateQualityUI(selectedIndex) {
+            const options = qualityPopupMenu.querySelectorAll('.quality-option');
+            options.forEach((opt) => {
+                const idx = parseInt(opt.dataset.index);
+                opt.classList.toggle('selected', idx === selectedIndex);
+            });
+            qualityPopupMenu.classList.remove('show');
+        }
+
+        function updateQualityMenuSelection() {
+            // Vuelve a generar todo el menú para reflejar el estado actual de hls.currentLevel y hls.autoLevelEnabled
+            setupQualityMenu();
+        }
+
+        playStopBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (video.paused) {
+                if (hls) {
+                    video.currentTime = hls.liveSyncPosition ?? video.duration;
+                }
+                video.play().then(() => {
+                    updatePlayState(true);
+                }).catch(err => {
+                    if (currentChannel) loadChannel(currentChannel);
+                });
+            } else {
+                video.pause();
+                updatePlayState(false);
+            }
+        });
+
+        function updateVolumeSliderBackground(value) {
+            const percentage = (value <= 1 ? value * 100 : value);
+            volumeSlider.style.background = `linear-gradient(to right, #ff0000 0%, #ff0000 ${percentage}%, #4a4a4a ${percentage}%, #4a4a4a 100%)`;
+        }
+
+        function actualizarBarraVolumen(val) {
+            const porcentaje = val * 100;
+            volumeSlider.style.background = `linear-gradient(to right, #e50914 ${porcentaje}%, rgba(255, 255, 255, 0.3) ${porcentaje}%)`;
+        }
+
+        volumeSlider.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            video.volume = val;
+            video.muted = (val === 0);
+
+            actualizarBarraVolumen(val);
+
+            if (val === 0) {
+                volumeHighIcon.style.display = 'none';
+                volumeMuteIcon.style.display = 'block';
+            } else {
+                volumeHighIcon.style.display = 'block';
+                volumeMuteIcon.style.display = 'none';
+            }
+        });
+        const volumeSliderContainer = document.querySelector('.volume-slider-container');
+        let lastVolume = 1;
+
+        function updateSliderBackground(val) {
+            const percentage = val * 100;
+            volumeSlider.style.background = `linear-gradient(to right, #e50914 ${percentage}%, rgba(255, 255, 255, 0.2) ${percentage}%)`;
+        }
+
+        volumeBtn.addEventListener('click', () => {
+            video.muted = !video.muted;
+            if (video.muted) {
+                volumeHighIcon.style.display = 'none';
+                volumeMuteIcon.style.display = 'block';
+                volumeSlider.value = 0;
+                actualizarBarraVolumen(0);
+            } else {
+                volumeHighIcon.style.display = 'block';
+                volumeMuteIcon.style.display = 'none';
+                if (video.volume === 0) video.volume = 0.5;
+                volumeSlider.value = video.volume;
+                actualizarBarraVolumen(video.volume);
+            }
+        });
+        updateSliderBackground(volumeSlider.value);
+        updateVolumeSliderBackground(volumeSlider.value);
+
+        qualityBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            qualityPopupMenu.classList.toggle('show');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!qualityBtn.contains(e.target)) {
+                qualityPopupMenu.classList.remove('show');
+            }
+        });
+
+        let mobileControlsTimeout = null;
+
+        function isMobileDevice() {
+            return window.innerWidth <= 768 || /Mobi|Android|iPhone/i.test(navigator.userAgent);
+        }
+
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (playerWrapper.requestFullscreen) {
+                    playerWrapper.requestFullscreen().then(() => {
+                        lockMobileLandscape();
+                    }).catch(err => console.log(err));
+                } else if (playerWrapper.webkitRequestFullscreen) {
+                    playerWrapper.webkitRequestFullscreen();
+                    lockMobileLandscape();
+                }
+            } else {
+                exitMobileLandscape();
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+            }
+        });
+
+        // Función para forzar la rotación horizontal en móviles
+        function lockMobileLandscape() {
+            if (isMobileDevice() && screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('landscape').catch((err) => {
+                    console.log("Bloqueo de orientación no soportado o denegado:", err);
+                });
+            }
+        }
+
+        // Función para liberar la orientación al salir
+        function exitMobileLandscape() {
+            if (screen.orientation && screen.orientation.unlock) {
+                try {
+                    screen.orientation.unlock();
+                } catch (err) {
+                    console.log("No se pudo desbloquear la orientación:", err);
+                }
+            }
+        }
+
+        function handleFullscreenChange() {
+            const mainContent = document.querySelector('.main-content');
+            const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+
+            if (isFullscreen && isMobileDevice()) {
+                mainContent.classList.add('mobile-landscape-fullscreen');
+                playerWrapper.classList.add('in-fullscreen');
+            } else {
+                mainContent.classList.remove('mobile-landscape-fullscreen');
+                playerWrapper.classList.remove('in-fullscreen');
+                exitMobileLandscape(); // Asegura liberar el giro si se sale por gestos del sistema
+            }
+        }
+
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+
+        video.addEventListener('click', () => {
+            if (!isMobileDevice()) return;
+
+            // Muestra los controles agregando la clase temporal
+            playerWrapper.classList.add('mobile-show-controls');
+
+            // Limpia el temporizador anterior si vuelve a tocar antes de los 3s
+            if (mobileControlsTimeout) {
+                clearTimeout(mobileControlsTimeout);
+            }
+
+            // Oculta los controles después de 3 segundos (3000 ms)
+            mobileControlsTimeout = setTimeout(() => {
+                playerWrapper.classList.remove('mobile-show-controls');
+            }, 3000);
+        });
+
+        searchBox.addEventListener('input', (e) => renderChannels(e.target.value));
+
+        // CONTROL DE VISIBILIDAD (PANTALLA COMPLETA O NORMAL CON MOUSEMOVE)
+        function showControlsTemporarily() {
+            playerWrapper.classList.remove('hide-controls');
+            playerWrapper.classList.remove('normal-autohide');
+            clearTimeout(controlsTimeout);
+
+            controlsTimeout = setTimeout(() => {
+                if (!video.paused) {
+                    if (document.fullscreenElement) {
+                        playerWrapper.classList.add('hide-controls');
+                    } else {
+                        playerWrapper.classList.add('normal-autohide');
+                    }
+                    if (qualityPopupMenu) qualityPopupMenu.classList.remove('show');
+                }
+            }, TIEMPO_OCULTAR_CONTROLES);
+        }
+
+        playerWrapper.addEventListener('mousemove', () => {
+            showControlsTemporarily();
+        });
+
+        function handleFullscreenTouch(e) {
+            if (!document.fullscreenElement) return;
+            if (e.target.closest('.quality-popup-menu, .sidebar, .mobile-menu-btn, .controls-overlay, .player-header')) return;
+
+            if (playerWrapper.classList.contains('hide-controls')) {
+                playerWrapper.classList.remove('hide-controls');
+                showControlsTemporarily();
+            } else {
+                playerWrapper.classList.add('hide-controls');
+                if (qualityPopupMenu) qualityPopupMenu.classList.remove('show');
+                clearTimeout(controlsTimeout);
+            }
+        }
+
+        playerWrapper.addEventListener('click', handleFullscreenTouch);
+        playerWrapper.addEventListener('touchstart', handleFullscreenTouch, { passive: true });
+
+        document.addEventListener('fullscreenchange', () => {
+            clearTimeout(controlsTimeout);
+            if (document.fullscreenElement) {
+                playerWrapper.classList.remove('normal-autohide');
+                playerWrapper.classList.add('in-fullscreen');
+                showControlsTemporarily();
+            } else {
+                playerWrapper.classList.remove('in-fullscreen', 'hide-controls', 'normal-autohide');
+            }
+        });
+
+        setInterval(() => {
+            if (video.buffered.length > 0) {
+                const bufferedEnd = video.buffered.end(video.buffered.length - 1);
+                const duration = bufferedEnd - video.currentTime;
+                bufferValue.textContent = `Buffer: ${duration.toFixed(1)}s`;
+                bufferDot.classList.toggle('low', duration < 2);
+            }
+        }, 1000);
+
+        document.addEventListener('touchstart', function unmuter() {
+            if (video.muted) {
+                video.muted = false;
+                if (typeof updateVolumeSliderBackground === 'function') {
+                    updateVolumeSliderBackground(video.volume);
+                }
+            }
+            document.removeEventListener('touchstart', unmuter);
+        }, { once: true });
+
+        renderChannels();
+        if (channels.length > 0) loadChannel(channels[0]);
+
+    </script>
+</body>
+
+</html>
