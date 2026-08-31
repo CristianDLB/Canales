@@ -932,6 +932,17 @@
         const overlay = document.getElementById('sidebarOverlay');
         const sidebarOverlay = document.getElementById('sidebarOverlay');
 
+        if (sidebar && sidebarOverlay) {
+            sidebar.addEventListener('touchstart', (e) => {
+                e.stopPropagation();
+            }, { passive: true });
+            sidebar.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+            sidebar.style.zIndex = '1000';
+            sidebarOverlay.style.zIndex = '999';
+        }
+
         let hls = null;
         let currentChannel = null;
         let controlsTimeout = null;
@@ -971,6 +982,7 @@
 
         function mostrarErrorServidor() {
             errorOverlay.style.opacity = '1';
+            errorOverlay.style.zIndex = '10';
             errorOverlay.style.pointerEvents = 'auto';
         }
 
@@ -1015,6 +1027,9 @@
         function closeMobileSidebar() {
             sidebar.classList.remove('mobile-open');
             sidebarOverlay.classList.remove('show');
+            if (mobileMenuBtn) {
+                mobileMenuBtn.innerHTML = `<svg viewBox="0 0 24 24" style="opacity: 1; transform: scale(1); transition: all 0.3s ease;"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" /></svg>`;
+            }
         }
 
         mobileMenuBtn.addEventListener('click', () => {
