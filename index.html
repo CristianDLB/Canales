@@ -898,12 +898,55 @@
                 url: "https://live-bd1.tv360.bitel.com.pe/manifest/america/master_clean_source.m3u8"
             },
             {
+                name: "Exitosa",
+                logo: "https://upload.wikimedia.org/wikipedia/commons/4/49/Logoexitosa.png",
+                url: "https://luna-4-video.mediaserver.digital/exitosatv_233b-4b49-a726-5a451262/index.m3u8"
+            },
+            {
+                name: "RPP",
+                logo: "https://upload.wikimedia.org/wikipedia/commons/7/70/Radio_Programas_del_Per%C3%BA_logo.svg",
+                url: "http://190.93.224.42/RPP/index.m3u8"
+            },
+            {
                 name: "El Chavo",
                 logo: "https://gia.tv/streams/pptv/211465.png",
                 url: "https://live20.bozztv.com/giatvplayout7/giatv-211465/playlist.m3u8"
             },
-
-
+            {
+                name: "Liga 1 Max",
+                logo: "https://next-liga1.fanatiz.com/liga1/strapi/production/image_LIGA_1_MAX_fabe3155b8.png",
+                url: "https://cablered.iptvperu.tv:1936/cablered/liga1max.stream/playlist.m3u8"
+            },
+            {
+                name: "Global Tv",
+                logo: "https://upload.wikimedia.org/wikipedia/commons/b/bd/Global_logo_2019.png",
+                url: "https://cablered.iptvperu.tv:1936/cablered/global.stream/playlist.m3u8"
+            },
+            {
+                name: "Tv Perú",
+                logo: "https://upload.wikimedia.org/wikipedia/commons/5/56/Tv_Per%C3%BA_-_Logo_2019_Reducido_%28TVPE%29.svg",
+                url: "https://cablered.iptvperu.tv:1936/cablered/tvperu_new/playlist.m3u8"
+            },
+            {
+                name: "Turbo Mix",
+                logo: "https://static.mytuner.mobi/media/tvos_radios/767/radio-turbomix-fm.2943a767.png",
+                url: "https://live-evg11.tv360.bitel.com.pe/bitel/turbomixSRT/playlist.m3u8"
+            }
+            /*      OPCIONES DE TARGET ABRIR CANAL EN UNA VENTANNA NUEVA
+                    TIENE QUE ESTAR ACTIVA PRIEMRO LA EXTENSION M3U8 https://goo.su/3wS0IN 
+            {
+                name: "Naruto",
+                logo: "https://www.freepnglogos.com/uploads/naruto/naruto-throwing-ball-transparent-png-stickpng-23.png",
+                url: "https://jmp2.uk/plu-5ee92e72fb286e0007285fec.m3u8",
+                targetBlank:true
+            },
+            {
+                name: "One Piece",
+                logo: "https://logos-marcas.com/wp-content/uploads/2021/09/One-Piece-Logo.png",
+                url: "https://jmp2.uk/plu-5ff4b9ccf938f8000779eb99.m3u8",
+                targetBlank:true
+            }
+            */
         ];
 
         const video = document.getElementById('videoPlayer');
@@ -1009,6 +1052,11 @@
             `;
 
                 item.addEventListener('click', () => {
+                    // Si el canal tiene la propiedad targetBlank en true, abre la URL en otra pestaña
+                    if (channel.targetBlank) {
+                        window.open(channel.url, '_blank', 'noopener,noreferrer');
+                        return; // Evita que intente cargarlo en el reproductor de video interno
+                    }
                     loadChannel(channel);
                     document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
                     item.classList.add('active');
@@ -1507,7 +1555,7 @@
         }, { once: true });
 
         renderChannels();
-        if (channels.length > 0) loadChannel(channels[0]);
+        if (channels.length > 0 && !channels[0].targetBlank) loadChannel(channels[0]);
 
     </script>
 </body>
