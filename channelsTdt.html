@@ -8,7 +8,7 @@
 
     <link rel="icon" type="image/png" href="logo.png?v=1">
     <!-- Hls.js Library -->
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -940,9 +940,9 @@
 
         // --- CARGA AUTOMÁTICA DEL ARCHIVO tv.m3u8 LOCAL ---
         window.addEventListener('DOMContentLoaded', () => {
-            fetch('tv.m3u8')
+            fetch('canal.m3u8')
                 .then(response => {
-                    if (!response.ok) throw new Error('No se pudo encontrar el archivo tv.m3u8');
+                    if (!response.ok) throw new Error('No se pudo encontrar el archivo canal.m3u8');
                     return response.text();
                 })
                 .then(data => {
@@ -951,7 +951,7 @@
                 .catch(err => {
                     console.error(err);
                     channelListContainer.innerHTML = `<div style="padding: 20px; text-align: center; color: #ff5252; font-size: 0.9rem;">Error: No se encontró el archivo <strong>tv.m3u8</strong> en la misma carpeta.</div>`;
-                    playerChannelName.textContent = "Error al cargar tv.m3u8";
+                    playerChannelName.textContent = "Error al cargar canal.m3u8";
                 });
         });
 
@@ -1052,89 +1052,141 @@
         });
 
         function loadChannel(channel) {
+            if (!channel || !channel.url) {
+                console.error("Canal sin URL válida:", channel);
+                mostrarErrorServidor();
+                return;
+            }
+
             currentChannel = channel;
             qualityPopupMenu.classList.remove('show');
-            playerChannelLogo.src = channel.logo;
-            playerChannelLogo.onerror = () => { playerChannelLogo.src = defaultLogo; };
-            playerChannelName.textContent = channel.name;
+            playerChannelLogo.src = channel.logo || defaultLogo;
+            playerChannelName.textContent = channel.name || "Canal";
 
             ocultarErrorServidor();
             if (channelLoadTimeout) clearTimeout(channelLoadTimeout);
 
+            // Detener y limpiar la reproducción anterior antes de cargar otro canal.
+            if (hls) {
+                hls.destroy();
+                hls = null;
+            }
+            video.pause();
+            video.removeAttribute('src');
+            video.load();
+
+            // Quitar manejadores anteriores para no acumular eventos al cambiar de canal.
+            video.onplaying = null;
+            video.onerror = null;
+            video.onloadedmetadata = null;
+
             channelLoadTimeout = setTimeout(() => {
                 if (video.paused || video.readyState < 2) {
+                    console.error("El canal no comenzó a reproducirse:", channel.url);
                     mostrarErrorServidor();
                 }
-            }, 6000);
+            }, 12000);
 
-            if (hls) hls.destroy();
+            video.onplaying = () => {
+                ocultarErrorServidor();
+                if (channelLoadTimeout) {
+                    clearTimeout(channelLoadTimeout);
+                    channelLoadTimeout = null;
+                }
+            };
 
-            if (Hls.isSupported()) {
+            video.onerror = () => {
+                console.error("Error del elemento de vídeo:", video.error, channel.url);
+                mostrarErrorServidor();
+            };
+
+            // HLS en Chrome, Edge y otros navegadores con Media Source Extensions.
+            if (typeof Hls !== "undefined" && Hls.isSupported()) {
                 hls = new Hls({
-                    maxBufferLength: 5,
-                    maxMaxBufferLength: 10,
+                    maxBufferLength: 10,
+                    maxMaxBufferLength: 20,
+
                     liveSyncDurationCount: 3,
                     liveMaxLatencyDurationCount: 6,
-                    lowLatencyMode: true,
+                    lowLatencyMode: false,
+
                     enableWorker: true,
-                    manifestLoadingTimeOut: 10000,
+
+                    manifestLoadingTimeOut: 20000,
                     manifestLoadingMaxRetry: 5,
-                    levelLoadingTimeOut: 10000,
+                    manifestLoadingRetryDelay: 1000,
+
+                    levelLoadingTimeOut: 20000,
                     levelLoadingMaxRetry: 5,
-                    fragLoadingTimeOut: 10000,
-                    fragLoadingMaxRetry: 6
-                });
+                    levelLoadingRetryDelay: 1000,
 
-                hls.loadSource(channel.url);
-                hls.attachMedia(video);
-
-                hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                    video.play().then(() => {
-                        updatePlayState(true);
-                    }).catch((err) => {
-                        console.log("Auto play bloqueado:", err);
-                    });
-                    setupQualityMenu();
-                });
-
-                video.addEventListener('playing', () => {
-                    ocultarErrorServidor();
-                    if (channelLoadTimeout) clearTimeout(channelLoadTimeout);
-                }, { once: true });
-
-                hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
-                    const autoDetailsText = document.getElementById('autoDetailsText');
-                    if (autoDetailsText && hls.autoLevelEnabled) {
-                        const lvl = hls.levels[data.level];
-                        if (lvl) {
-                            autoDetailsText.innerText = `${lvl.height}p (${(lvl.bitrate / 1000000).toFixed(1)} Mbps)`;
-                        }
-                    }
+                    fragLoadingTimeOut: 30000,
+                    fragLoadingMaxRetry: 6,
+                    fragLoadingRetryDelay: 1000
                 });
 
                 hls.on(Hls.Events.ERROR, (event, data) => {
-                    if (data.fatal) {
-                        switch (data.type) {
-                            case Hls.ErrorTypes.NETWORK_ERROR:
-                                hls.startLoad();
-                                break;
-                            case Hls.ErrorTypes.MEDIA_ERROR:
-                                hls.recoverMediaError();
-                                break;
-                            default:
-                                loadChannel(channel);
-                                break;
+                    console.error("Error HLS:", data.type, data.details, data);
+                    if (!data.fatal) return;
+
+                    // No volver a llamar loadChannel() recursivamente: puede crear un bucle.
+                    if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+                        hls.startLoad();
+                    } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+                        hls.recoverMediaError();
+                    } else {
+                        if (channelLoadTimeout) {
+                            clearTimeout(channelLoadTimeout);
+                            channelLoadTimeout = null;
+                        }
+                        mostrarErrorServidor();
+                    }
+                });
+
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    setupQualityMenu();
+                    video.play().then(() => {
+                        updatePlayState(true);
+                    }).catch((err) => {
+                        console.warn("El navegador requiere que pulses reproducir:", err);
+                        updatePlayState(false);
+                    });
+                });
+
+                hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
+                    const autoDetailsText = document.getElementById('autoDetailsText');
+                    if (autoDetailsText && hls && hls.autoLevelEnabled) {
+                        const level = hls.levels[data.level];
+                        if (level) {
+                            autoDetailsText.textContent =
+                                `${level.height || "?"}p (${(level.bitrate / 1000000).toFixed(1)} Mbps)`;
                         }
                     }
                 });
 
+                hls.loadSource(channel.url.trim());
+                hls.attachMedia(video);
+
+            // HLS nativo (por ejemplo Safari), si el navegador lo admite.
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = channel.url;
-                video.addEventListener('loadedmetadata', () => {
+                video.src = channel.url.trim();
+                video.onloadedmetadata = () => {
                     video.play().then(() => {
                         updatePlayState(true);
-                    }).catch(() => { });
-                });
+                    }).catch((err) => {
+                        console.warn("El navegador requiere que pulses reproducir:", err);
+                        updatePlayState(false);
+                    });
+                };
+                video.load();
+
+            } else {
+                console.error("Este navegador no admite HLS en este dispositivo.");
+                if (channelLoadTimeout) {
+                    clearTimeout(channelLoadTimeout);
+                    channelLoadTimeout = null;
+                }
+                mostrarErrorServidor();
             }
         }
 

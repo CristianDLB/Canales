@@ -9,7 +9,7 @@
     <link rel="icon" type="image/png" href="logo.png?v=1">
 
     <!-- Hls.js Library -->
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -900,7 +900,7 @@
             },
             {
                 name: "Exitosa",
-                logo: "https://upload.wikimedia.org/wikipedia/commons/4/49/Logoexitosa.png",
+                logo: "https://graph.facebook.com/Exitosanoticias/picture?width=200&height=200",
                 url: "https://luna-4-video.mediaserver.digital/exitosatv_233b-4b49-a726-5a451262/index.m3u8"
             },
             {
@@ -928,21 +928,7 @@
                 logo: "https://static.mytuner.mobi/media/tvos_radios/767/radio-turbomix-fm.2943a767.png",
                 url: "https://live-evg11.tv360.bitel.com.pe/bitel/turbomixSRT/playlist.m3u8"
             }
-            /*      OPCIONES DE TARGET ABRIR CANAL EN UNA VENTANNA NUEVA
-                    TIENE QUE ESTAR ACTIVA PRIEMRO LA EXTENSION M3U8 https://goo.su/3wS0IN 
-            {
-                name: "Naruto",
-                logo: "https://www.freepnglogos.com/uploads/naruto/naruto-throwing-ball-transparent-png-stickpng-23.png",
-                url: "https://jmp2.uk/plu-5ee92e72fb286e0007285fec.m3u8",
-                targetBlank:true
-            },
-            {
-                name: "One Piece",
-                logo: "https://logos-marcas.com/wp-content/uploads/2021/09/One-Piece-Logo.png",
-                url: "https://jmp2.uk/plu-5ff4b9ccf938f8000779eb99.m3u8",
-                targetBlank:true
-            }
-            */
+
         ];
 
         
@@ -1103,99 +1089,133 @@
         });
 
         function loadChannel(channel) {
+            if (!channel || !channel.url) {
+                console.error("Canal sin URL válida:", channel);
+                mostrarErrorServidor();
+                return;
+            }
+
             currentChannel = channel;
             qualityPopupMenu.classList.remove('show');
-            playerChannelLogo.src = channel.logo;
-            playerChannelName.textContent = channel.name;
+            playerChannelLogo.src = channel.logo || defaultLogo;
+            playerChannelName.textContent = channel.name || "Canal";
 
-            // Limpiamos errores anteriores y activamos el temporizador de 6 segundos
             ocultarErrorServidor();
             if (channelLoadTimeout) clearTimeout(channelLoadTimeout);
 
+            // Detener y limpiar la reproducción anterior antes de cargar otro canal.
+            if (hls) {
+                hls.destroy();
+                hls = null;
+            }
+            video.pause();
+            video.removeAttribute('src');
+            video.load();
+
+            // Quitar manejadores anteriores para no acumular eventos al cambiar de canal.
+            video.onplaying = null;
+            video.onerror = null;
+            video.onloadedmetadata = null;
+
             channelLoadTimeout = setTimeout(() => {
-                // Si tras 6 segundos el video sigue sin reproducir o cargando, lanzamos el error
                 if (video.paused || video.readyState < 2) {
+                    console.error("El canal no comenzó a reproducirse:", channel.url);
                     mostrarErrorServidor();
                 }
-            }, 6000);
+            }, 12000);
 
-            if (hls) hls.destroy();
+            video.onplaying = () => {
+                ocultarErrorServidor();
+                if (channelLoadTimeout) {
+                    clearTimeout(channelLoadTimeout);
+                    channelLoadTimeout = null;
+                }
+            };
 
-            if (Hls.isSupported()) {
+            video.onerror = () => {
+                console.error("Error del elemento de vídeo:", video.error, channel.url);
+                mostrarErrorServidor();
+            };
+
+            // HLS en Chrome, Edge y otros navegadores con Media Source Extensions.
+            if (typeof Hls !== "undefined" && Hls.isSupported()) {
                 hls = new Hls({
-                    // --- Control de Búfer (Estable entre 5s y 10s) ---
-                    maxBufferLength: 5,           // Intenta mantener siempre un búfer base de 5 segundos
-                    maxMaxBufferLength: 10,       // Permite acumular como máximo 10 segundos antes de dejar de descargar
-
-                    // --- Control de Retraso / Latencia en Vivo (Alineados al nuevo búfer) ---
-                    liveSyncDurationCount: 3,     // Se mantiene sincronizado a una distancia segura de 3 segmentos
-                    liveMaxLatencyDurationCount: 6, // Permite tolerar hasta 6 segmentos de retraso máximo antes de recortar
-
-                    // --- Rendimiento y Red ---
+                    maxBufferLength: 10,
+                    maxMaxBufferLength: 20,
+                    liveSyncDurationCount: 3,
+                    liveMaxLatencyDurationCount: 6,
                     lowLatencyMode: true,
                     enableWorker: true,
-                    manifestLoadingTimeOut: 10000,
-                    manifestLoadingMaxRetry: 5,
-                    levelLoadingTimeOut: 10000,
-                    levelLoadingMaxRetry: 5,
-                    fragLoadingTimeOut: 10000,
-                    fragLoadingMaxRetry: 6
+                    manifestLoadingTimeOut: 15000,
+                    manifestLoadingMaxRetry: 3,
+                    levelLoadingTimeOut: 15000,
+                    levelLoadingMaxRetry: 3,
+                    fragLoadingTimeOut: 20000,
+                    fragLoadingMaxRetry: 4
                 });
 
-                hls.loadSource(channel.url);
-                hls.attachMedia(video);
+                hls.on(Hls.Events.ERROR, (event, data) => {
+                    console.error("Error HLS:", data.type, data.details, data);
+                    if (!data.fatal) return;
+
+                    // No volver a llamar loadChannel() recursivamente: puede crear un bucle.
+                    if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+                        hls.startLoad();
+                    } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+                        hls.recoverMediaError();
+                    } else {
+                        if (channelLoadTimeout) {
+                            clearTimeout(channelLoadTimeout);
+                            channelLoadTimeout = null;
+                        }
+                        mostrarErrorServidor();
+                    }
+                });
 
                 hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    setupQualityMenu();
                     video.play().then(() => {
                         updatePlayState(true);
                     }).catch((err) => {
-                        console.log("Auto play bloqueado por el navegador:", err);
+                        console.warn("El navegador requiere que pulses reproducir:", err);
+                        updatePlayState(false);
                     });
-                    setupQualityMenu();
                 });
-
-                // Si empieza a reproducir de forma exitosa, cancelamos el aviso de error
-                video.addEventListener('playing', () => {
-                    ocultarErrorServidor();
-                    if (channelLoadTimeout) clearTimeout(channelLoadTimeout);
-                }, { once: true });
 
                 hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
-                    // Si está en automática, actualizamos el texto dinámico de los Mbps y resolución
                     const autoDetailsText = document.getElementById('autoDetailsText');
-                    if (autoDetailsText && hls.autoLevelEnabled) {
-                        const lvl = hls.levels[data.level];
-                        if (lvl) {
-                            autoDetailsText.innerText = `${lvl.height}p (${(lvl.bitrate / 1000000).toFixed(1)} Mbps)`;
+                    if (autoDetailsText && hls && hls.autoLevelEnabled) {
+                        const level = hls.levels[data.level];
+                        if (level) {
+                            autoDetailsText.textContent =
+                                `${level.height || "?"}p (${(level.bitrate / 1000000).toFixed(1)} Mbps)`;
                         }
                     }
                 });
 
+                hls.loadSource(channel.url.trim());
+                hls.attachMedia(video);
 
-
-                hls.on(Hls.Events.ERROR, (event, data) => {
-                    if (data.fatal) {
-                        switch (data.type) {
-                            case Hls.ErrorTypes.NETWORK_ERROR:
-                                hls.startLoad();
-                                break;
-                            case Hls.ErrorTypes.MEDIA_ERROR:
-                                hls.recoverMediaError();
-                                break;
-                            default:
-                                loadChannel(channel);
-                                break;
-                        }
-                    }
-                });
-
+            // HLS nativo (por ejemplo Safari), si el navegador lo admite.
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = channel.url;
-                video.addEventListener('loadedmetadata', () => {
+                video.src = channel.url.trim();
+                video.onloadedmetadata = () => {
                     video.play().then(() => {
                         updatePlayState(true);
-                    }).catch(() => { });
-                });
+                    }).catch((err) => {
+                        console.warn("El navegador requiere que pulses reproducir:", err);
+                        updatePlayState(false);
+                    });
+                };
+                video.load();
+
+            } else {
+                console.error("Este navegador no admite HLS en este dispositivo.");
+                if (channelLoadTimeout) {
+                    clearTimeout(channelLoadTimeout);
+                    channelLoadTimeout = null;
+                }
+                mostrarErrorServidor();
             }
         }
 
