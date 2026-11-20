@@ -40,6 +40,43 @@
             flex-direction: row;
         }
 
+        /* ADAPTACIÓN PARA TELEVISORES / PANTALLAS GRANDES Y CONTROL REMOTO */
+        button:focus-visible,
+        a:focus-visible,
+        input:focus-visible,
+        .channel-item:focus-visible,
+        .quality-option:focus-visible {
+            outline: 2px solid #0070f3;
+            outline-offset: 2px;
+        }
+
+        @media (min-width: 1600px) {
+            .sidebar {
+                width: 400px;
+            }
+            .channel-logo,
+            .player-channel-logo {
+                width: 58px;
+                height: 58px;
+                min-width: 58px;
+                min-height: 58px;
+            }
+            .channel-title {
+                font-size: 1rem;
+            }
+            .player-channel-name {
+                font-size: 1.2rem;
+            }
+            .btn-control {
+                width: 46px;
+                height: 46px;
+            }
+            .btn-control svg {
+                width: 26px;
+                height: 26px;
+            }
+        }
+
         /* LOGO ESTILO */
         .sidebar-brand img {
             width: 30px;
@@ -116,12 +153,6 @@
             letter-spacing: -0.5px;
             color: #fff;
             margin-bottom: 18px;
-        }
-
-        .sidebar-brand svg {
-            fill: #0070f3;
-            width: 26px;
-            height: 26px;
         }
 
         .search-container {
@@ -228,6 +259,20 @@
             text-overflow: ellipsis;
         }
 
+        .channel-meta-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .channel-group-tag {
+            font-size: 0.68rem;
+            color: rgba(255, 255, 255, 0.5);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
         .channel-badge {
             display: inline-flex;
             align-items: center;
@@ -236,6 +281,8 @@
             font-weight: 700;
             color: #0070f3;
             letter-spacing: 0.5px;
+            transition: color 0.3s ease;
+            flex-shrink: 0;
         }
 
         .live-dot {
@@ -244,6 +291,17 @@
             background-color: #0070f3;
             border-radius: 50%;
             box-shadow: 0 0 6px #0070f3;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* ESTADO OFFLINE MORADO */
+        .channel-badge.offline {
+            color: #a855f7;
+        }
+
+        .channel-badge.offline .live-dot {
+            background-color: #a855f7;
+            box-shadow: 0 0 6px #a855f7;
         }
 
         /* ÁREA PRINCIPAL */
@@ -271,6 +329,58 @@
             height: 100%;
             object-fit: contain;
             display: block;
+        }
+
+        /* SPINNER CENTRAL DE CARGANDO / BUFFER MUY BAJO */
+        .center-loading-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.35);
+            z-index: 15;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+
+        .center-loading-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .center-spinner {
+            width: 56px;
+            height: 56px;
+            border: 4px solid rgba(255, 255, 255, 0.18);
+            border-top-color: #0070f3;
+            border-radius: 50%;
+            animation: centerSpin 0.85s linear infinite;
+            box-shadow: 0 0 18px rgba(0, 112, 243, 0.35);
+        }
+
+        .center-loading-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(15, 15, 17, 0.75);
+            padding: 5px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            letter-spacing: 0.3px;
+        }
+
+        @keyframes centerSpin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .player-header {
@@ -370,6 +480,7 @@
             border-radius: 50%;
             transition: background 0.2s ease, transform 0.1s ease;
             flex-shrink: 0;
+            position: relative;
         }
 
         .btn-control:hover {
@@ -381,6 +492,30 @@
             width: 22px;
             height: 22px;
             fill: #fff;
+        }
+
+        @keyframes spinReload {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .btn-control.spinning svg {
+            animation: spinReload 0.6s linear infinite;
+        }
+
+        .btn-control.cc-active::after {
+            content: '';
+            position: absolute;
+            bottom: 6px;
+            left: 10px;
+            right: 10px;
+            height: 2.5px;
+            background-color: #0070f3;
+            border-radius: 2px;
         }
 
         .live-indicator {
@@ -397,12 +532,13 @@
             white-space: nowrap;
         }
 
-        /* MENÚ DE CALIDAD */
-        .quality-menu-container {
+        .quality-menu-container,
+        .subtitle-menu-container {
             position: relative;
         }
 
-        .quality-popup-menu {
+        .quality-popup-menu,
+        .subtitle-popup-menu {
             position: absolute;
             bottom: 50px;
             right: 0;
@@ -418,8 +554,24 @@
             z-index: 50;
         }
 
-        .quality-popup-menu.show {
+        .subtitle-popup-menu {
+            width: 220px;
+        }
+
+        .quality-popup-menu.show,
+        .subtitle-popup-menu.show {
             display: flex;
+        }
+
+        .popup-menu-header {
+            padding: 6px 16px 8px 16px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: rgba(255, 255, 255, 0.5);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 4px;
         }
 
         .quality-option {
@@ -506,13 +658,14 @@
             box-shadow: 0 0 6px #dc3545;
         }
 
-        /* ESTADOS DE VISIBILIDAD DINÁMICA */
         .player-wrapper.in-fullscreen.hide-controls .controls-overlay,
         .player-wrapper.in-fullscreen.hide-controls .player-header,
         .player-wrapper.in-fullscreen.hide-controls #qualityPopupMenu,
+        .player-wrapper.in-fullscreen.hide-controls #subtitlePopupMenu,
         .player-wrapper.normal-autohide .controls-overlay,
         .player-wrapper.normal-autohide .player-header,
-        .player-wrapper.normal-autohide #qualityPopupMenu {
+        .player-wrapper.normal-autohide #qualityPopupMenu,
+        .player-wrapper.normal-autohide #subtitlePopupMenu {
             opacity: 0 !important;
             visibility: hidden !important;
             pointer-events: none !important;
@@ -590,7 +743,6 @@
             margin-top: -4px;
         }
 
-        /* ESTILOS PARA EL BOTÓN "MÁS CANALES" (AZUL) */
         .more-channels-btn {
             display: flex;
             align-items: center;
@@ -624,7 +776,6 @@
             flex-shrink: 0;
         }
 
-        /* ADAPTACIÓN MÓVIL OPTIMIZADA */
         @media (max-width: 768px) {
             .mobile-menu-btn {
                 display: flex;
@@ -708,7 +859,8 @@
 
             .player-wrapper.mobile-show-controls .controls-overlay,
             .player-wrapper.mobile-show-controls .player-header,
-            .player-wrapper.mobile-show-controls #qualityPopupMenu {
+            .player-wrapper.mobile-show-controls #qualityPopupMenu,
+            .player-wrapper.mobile-show-controls #subtitlePopupMenu {
                 opacity: 1 !important;
                 visibility: visible !important;
                 pointer-events: auto !important;
@@ -719,9 +871,14 @@
                 right: 0;
                 bottom: 45px;
             }
+
+            .subtitle-popup-menu {
+                width: 200px;
+                right: 0;
+                bottom: 45px;
+            }
         }
     </style>
-
 </head>
 
 <body>
@@ -744,7 +901,7 @@
             <div class="sidebar-header">
                 <div class="sidebar-brand">
                     <img src="logo.png?v=1" alt="Canal Tv Logo">
-                    <span>TDTChannels M3U8</span>
+                    <span>TDTChannels</span>
                 </div>
 
                 <!-- BOTÓN REGRESO A CANALES PRINCIPALES -->
@@ -773,9 +930,15 @@
                 <div class="player-header">
                     <img src="" id="playerChannelLogo" class="player-channel-logo" alt="Logo Canal">
                     <div class="player-channel-info">
-                        <span class="player-channel-name" id="playerChannelName">Cargando canales...</span>
-                        <span class="channel-badge"><span class="live-dot"></span> EN VIVO</span>
+                        <span class="player-channel-name" id="playerChannelName">Cargando canal...</span>
+                        <span class="channel-badge" id="playerStatusBadge"><span class="live-dot"></span> EN VIVO</span>
                     </div>
+                </div>
+
+                <!-- SPINNER CENTRAL DE CARGANDO / BUFFER MUY BAJO -->
+                <div class="center-loading-overlay" id="centerLoadingOverlay">
+                    <div class="center-spinner"></div>
+                    <span class="center-loading-label" id="centerLoadingLabel">Cargando flujo...</span>
                 </div>
 
                 <video id="videoPlayer" autoplay muted playsinline></video>
@@ -793,6 +956,12 @@
                                 </svg>
                                 <svg id="stopIcon" viewBox="0 0 24 24" style="display:none;">
                                     <path d="M6 6h12v12H6z" />
+                                </svg>
+                            </button>
+
+                            <button class="btn-control" id="reloadBtn" title="Recargar transmisión (Conexión inestable)" style="display:none;">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
                                 </svg>
                             </button>
 
@@ -825,11 +994,20 @@
                                 <span id="bufferValue">Buffer: 0.0s</span>
                             </div>
 
+                            <div class="subtitle-menu-container" id="subtitleMenuContainer" style="display:none;">
+                                <button class="btn-control" id="subtitleBtn" title="Subtítulos (CC)">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M19 4H5c-1.11 0-2 .9-2 2v12c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 7H9.5v-.5h-2v3h2V13H11v1c0 .55-.45 1-1 1H7c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1h3c.55 0 1 .45 1 1v1zm7 0h-1.5v-.5h-2v3h2V13H18v1c0 .55-.45 1-1 1h-3c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1h3c.55 0 1 .45 1 1v1z"/>
+                                    </svg>
+                                </button>
+                                <div class="subtitle-popup-menu" id="subtitlePopupMenu"></div>
+                            </div>
+
                             <div class="quality-menu-container">
                                 <button class="btn-control" id="qualityBtn" title="Calidad">
                                     <svg viewBox="0 0 24 24">
                                         <path
-                                            d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c-.5.38 1.03.7 1.62.94l.36 2.54c-.05.24.24.41.48.41h3.84c-.24 0 .43-.17.47-.41l.36-2.54c-.59-.24-1.13-.56-1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6-3.6z" />
+                                            d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c-.5.38 1.03.7 1.62.94l.36 2.54c-.05.24.24.41.48.41h3.84c-.24 0 .43-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6-3.6z" />
                                     </svg>
                                 </button>
                                 <div class="quality-popup-menu" id="qualityPopupMenu"></div>
@@ -850,15 +1028,282 @@
 
     </div>
 
-    
     <script>
-        let channels = [];
         const defaultLogo = "https://i.imgur.com/8Qp87Gf.png";
+
+        // CANALES INTEGRADOS UNO POR UNO CONSERVANDO SU GRUPO
+        const channels = [
+            {
+                name: "La 1 [ES][720]",
+                group: "TV Española",
+                logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKAkEfk96B4C3wdml0A6_Ewv8zhsVAj2AVDSLpS34DMw&s",
+                url: "https://rtvelivestream.rtve.es/rtvesec/la1/la1_main_dvr.m3u8",
+                isOffline: false
+            },
+            {
+                name: "La 1 [ES][1080]",
+                group: "TV Española",
+                logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKAkEfk96B4C3wdml0A6_Ewv8zhsVAj2AVDSLpS34DMw&s",
+                url: "https://stream.ads.ottera.tv/playlist.m3u8?network_id=15619&avod=1&coppa=0&td=6&is_lat=[LMT]&dnt=[DNS]&us_privacy=[US_PRIVACY]&did=[DEVICE_ID]&ip=[IP]&ua=[UA]&ifa_type=[IFA_TYPE]&app_bundle=[APP_BUNDLE]",
+                isOffline: false
+            },
+            {
+                name: "La 2 [ES][720]",
+                group: "TV Española",
+                logo: "https://yt3.googleusercontent.com/ytc/AIdro_kqgHWySi5xprs1VFCNCX0IKNT8yXBLZC43JMoB8j0JUto=s200",
+                url: "https://rtvelivestream.rtve.es/rtvesec/la2/la2_main_dvr.m3u8",
+                isOffline: false
+            },
+            {
+                name: "La 2 [ES][1080]",
+                group: "TV Española",
+                logo: "https://yt3.googleusercontent.com/ytc/AIdro_kqgHWySi5xprs1VFCNCX0IKNT8yXBLZC43JMoB8j0JUto=s200",
+                url: "https://stream.ads.ottera.tv/playlist.m3u8?network_id=15618",
+                isOffline: false
+            },
+            {
+                name: "El País [ES][1080]",
+                group: "TV Española",
+                logo: "https://graph.facebook.com/elpais/picture?width=200&height=200",
+                url: "https://d2epgk1fomaa1g.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-9n8y4tw0bk3an/live/fast-channel-el-pais/fast-channel-el-pais.m3u8",
+                isOffline: false
+            },
+            {
+                name: "TVE Int. América [ES][720]",
+                group: "TV Española",
+                logo: "https://graph.facebook.com/tveInternacional/picture?width=200&height=200",
+                url: "https://rtvelivestream.rtve.es/rtvesec/int/tvei_ame_main_dvr.m3u8",
+                isOffline: false
+            },
+            {
+                name: "DW Alemania [ES][1080]",
+                group: "Informativos",
+                logo: "https://graph.facebook.com/dw.espanol/picture?width=200&height=200",
+                url: "https://dwamdstream104.akamaized.net/hls/live/2015530/dwstream104/index.m3u8",
+                isOffline: false
+            },
+            {
+                name: "Euronews [ES][720]",
+                group: "Informativos",
+                logo: "https://graph.facebook.com/es.euronews/picture?width=200&height=200",
+                url: "https://cdn-euronews.akamaized.net/live/eds/euronews-es/25053/index.m3u8",
+                isOffline: false
+            },
+            {
+                name: "Euronews [EN][720]",
+                group: "Informativos",
+                logo: "https://graph.facebook.com/es.euronews/picture?width=200&height=200",
+                url: "https://cdn-euronews.akamaized.net/live/eds/euronews-en/25002/index.m3u8",
+                isOffline: false
+            },
+            {
+                name: "CNN Internacional [EN][1080]",
+                group: "Informativos",
+                logo: "https://graph.facebook.com/cnninternational/picture?width=200&height=200",
+                url: "https://ds2c506obo7m8.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-7zjq3tdqasbg8/index.m3u8",
+                isOffline: false
+            },
+            {
+                name: "CNN [EN][1080]",
+                group: "Informativos",
+                logo: "https://jiotvimages.cdn.jio.com/dare_images/images/CNN.png",
+                url: "https://amg01918-cnnus-amg01918c2-vizio-us-9192.playouts.now.amagi.tv/playlist/amg01918-cnnus-cnnoriginals-vizious/playlist.m3u8",
+                isOffline: false
+            },
+            {
+                name: "CNN en Español [LA][720]",
+                group: "Informativos",
+                logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Logo_de_CNN_en_Espa%C3%B1ol_%282010-2015%29.svg/960px-Logo_de_CNN_en_Espa%C3%B1ol_%282010-2015%29.svg.png",
+                url: "https://streaming.onnethn.com/CNN_ESPANOL/playlist.m3u8",
+                isOffline: false
+            },
+            {
+                name: "RT [EN][1080]",
+                group: "Informativos",
+                logo: "https://upload.wikimedia.org/wikipedia/commons/a/a0/Russia-today-logo.svg",
+                url: "https://wisewatchoott.wiseplayout.com/RT/master.m3u8",
+                isOffline: false
+            },
+            {
+                name: "RT [ES][1080]",
+                group: "Informativos",
+                logo: "https://upload.wikimedia.org/wikipedia/commons/a/a0/Russia-today-logo.svg",
+                url: "https://rt-esp.rttv.com/dvr/rtesp/playlist.m3u8",
+                isOffline: false
+            },
+            {
+                name: "ADN Noticias [MX][720]",
+                group: "Informativos",
+                logo: "https://pbs.twimg.com/profile_images/1968512728059850752/KUWD445m_200x200.jpg",
+                url: "https://mdstrm.com/live-stream-playlist/60b578b060947317de7b57ac.m3u8",
+                isOffline: false
+            },
+            {
+                name: "TeleSUR [VE][1080]",
+                group: "Informativos",
+                logo: "https://graph.facebook.com/teleSUR/picture?width=200&height=200",
+                url: "https://mblesmain01.telesur.ultrabase.net/mbliveMain/hd/playlist.m3u8",
+                isOffline: false
+            },
+            {
+                name: "America Internacional [PE][720]",
+                group: "Informativos",
+                logo: "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/23/Am%C3%A9rica_Televisi%C3%B3n_Internacional_2022.png/960px-Am%C3%A9rica_Televisi%C3%B3n_Internacional_2022.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+                url: "https://api-ott.americatv.com.pe/loggingmediaurlpassthrough/a.m3u8?version=12&id=10&partner=whaletv&tag_id=139913&app_name=Whale+TV%2B&app_store=Browser&ic=IAB1&url=&wtv_channel_id=0470&content_id=&content_genre=News&content_title=&content_series=&content_season=&content_episode=&language=&dur=&rating=12%2B&content_producer_name=OTTera_AmericaTV_AmericaTelevision&content_categories=IAB19-29%2CIAB12&content_custom_1_param=OTTera&content_custom_2_param=F%2CM&content_custom_3_param=18-20%2C21-24%2C25-29%2C30-34%2C35-39%2C40-44%2C45-49%2C50-54%2C55-59&tv_language=&device_make=&tv_vendor=&brand_name=&device_model=&tv_model=&gdpr=1&gdpr_consent=&did=&ua=&ip=&dnt=&lmt=&coppa=0&us_privacy=1YNN&min_dur=5&max_dur=30&cb=&h=&w=&content_livestream=1&placement=1&ap=1&mute=0&skip=0&ads.gdpr",
+                isOffline: false
+            },
+            {
+                name: "Latina Noticias [PE][1080]",
+                group: "Informativos",
+                logo: "https://graph.facebook.com/Latina.pe/picture?width=200&height=200",
+                url: "https://redirector.rudo.video/hls-video/567ffde3fa319fadf3419efda25619456231dfea/latinanoticias/latinanoticias.smil/playlist.m3u8",
+                isOffline: false
+            },
+            {
+                name: "Exitosa Noticias [PE][720]",
+                group: "Informativos",
+                logo: "https://graph.facebook.com/Exitosanoticias/picture?width=200&height=200",
+                url: "https://luna-4-video.mediaserver.digital/exitosatv_233b-4b49-a726-5a451262/index.m3u8",
+                isOffline: false
+            },
+            {
+                name: "Channel 24 Ucrania [UK][1080]",
+                group: "Informativos",
+                logo: "https://graph.facebook.com/news24ukraine/picture?width=200&height=200",
+                url: "https://streamvideol1.luxnet.ua/news24/news24.stream/playlist.m3u8",
+                isOffline: false
+            },
+            {
+                name: "Russia-1 [RUS][1080]",
+                group: "Informativos",
+                logo: "https://logos-world.net/wp-content/uploads/2025/01/Russia-1-Logo.png",
+                url: "https://stream.smotrim.ru/hls2/russia_hd/playlist_6.m3u8",
+                isOffline: false
+            },
+            {
+                name: "Live Now FOX [EN][720]",
+                group: "Informativos",
+                logo: "https://graph.facebook.com/livenowfox/picture?width=200&height=200",
+                url: "https://cdn-uw2-prod.tsv2.amagi.tv/linear/amg00488-foxdigital-livenowbyfox-lgus/playlist.m3u8",
+                isOffline: false
+            },
+            {
+                name: "ABC News [EN][720]",
+                group: "Informativos",
+                logo: "https://logos-world.net/wp-content/uploads/2023/09/ABC-News-Logo.png",
+                url: "https://aegis-cloudfront-1.tubi.video/d6cbb0de-68e4-4f3b-82f9-bf5d526e0bde/index.m3u8",
+                isOffline: false
+            },
+            {
+                name: "NBC News [EN][1080]",
+                group: "Informativos",
+                logo: "https://logos-world.net/wp-content/uploads/2024/01/NBC-News-Logo.png",
+                url: "https://d1bl6tskrpq9ze.cloudfront.net/hls/master.m3u8?ads.xumo_channelId=99984003",
+                isOffline: false
+            },
+            {
+                name: "CBS News [EN][720]",
+                group: "Informativos",
+                logo: "https://graph.facebook.com/CBSNews/picture?width=200&height=200",
+                url: "https://cbsn-us.cbsnstream.cbsnews.com/out/v1/55a8648e8f134e82a470f83d562deeca/master.m3u8",
+                isOffline: false
+            },
+            {
+                name: "America's Voice [EN][720]",
+                group: "Informativos",
+                logo: "https://graph.facebook.com/RealAmericasVoice/picture?width=200&height=200",
+                url: "https://d2jiqiw4g5lj5k.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a62b09d1/AmericasVoiceChannel-prod/AVSamsung/AVSamsung.m3u8",
+                isOffline: false
+            },
+            {
+                name: "Newsmax [EN][1080]",
+                group: "Informativos",
+                logo: "https://graph.facebook.com/newsmax/picture?width=200&height=200",
+                url: "https://nmxlive.akamaized.net/hls/live/529965/Live_1/index.m3u8",
+                isOffline: false
+            },
+            {
+                name: "Real Madrid TV [ES][720]",
+                group: "Deportivos",
+                logo: "https://graph.facebook.com/RealMadrid/picture?width=200&height=200",
+                url: "https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8",
+                isOffline: false
+            },
+            {
+                name: "Real Madrid TV [EN] [720]",
+                group: "Deportivos",
+                logo: "https://graph.facebook.com/RealMadrid/picture?width=200&height=200",
+                url: "https://rmtv.akamaized.net/hls/live/2043154/rmtv-en-web/master.m3u8",
+                isOffline: false
+            },
+            {
+                name: "Latina [PE][1080]",
+                group: "Perú",
+                logo: "https://graph.facebook.com/Latina.pe/picture?width=200&height=200",
+                url: "https://redirector.rudo.video/hls-video/567ffde3fa319fadf3419efda25619456231dfea/latina/latina.smil/playlist.m3u8",
+                isOffline: false
+            },
+            {
+                name: "Latina Clasicos [PE][1080]",
+                group: "Perú",
+                logo: "https://graph.facebook.com/Latina.pe/picture?width=200&height=200",
+                url: "https://redirector.rudo.video/hls-video/plus226/latina2/latina2.smil/playlist.m3u8",
+                isOffline: false
+            },
+            {
+                name: "History Latam [ES][1080]",
+                group: "General",
+                logo: "https://logos-world.net/wp-content/uploads/2023/07/History-Logo.png",
+                url: "https://d1k3vzh2ivy22k.cloudfront.net/Historia.m3u8",
+                isOffline: false
+            },
+            {
+                name: "María Visión [ES][1080]",
+                group: "Religiosos",
+                logo: "https://graph.facebook.com/mariavision/picture?width=200&height=200",
+                url: "https://1601580044.rsc.cdn77.org/live/_jcn_/amls:Italiatre/playlist.m3u8",
+                isOffline: false
+            },
+            {
+                name: "María Visión [MX][1080]",
+                group: "Religiosos",
+                logo: "https://graph.facebook.com/mariavision/picture?width=200&height=200",
+                url: "https://1601580044.rsc.cdn77.org/live/_jcn_/amlst:Mariavision/master.m3u8",
+                isOffline: false
+            },
+            {
+                name: "EWTN [LA][720]",
+                group: "Religiosos",
+                logo: "https://graph.facebook.com/ewtnespanol/picture?width=200&height=200",
+                url: "https://cdn3.wowza.com/1/SmVrQmZCUXZhVDgz/b3J3MFJv/hls/live/playlist.m3u8",
+                isOffline: false
+            },
+            {
+                name: "EWTN [ES][1080]",
+                group: "Religiosos",
+                logo: "https://graph.facebook.com/ewtnespanol/picture?width=200&height=200",
+                url: "https://1211313014.rsc.cdn77.org/1211313014/index.m3u8",
+                isOffline: false
+            },
+            {
+                name: "EWTN [EN][720]",
+                group: "Religiosos",
+                logo: "https://graph.facebook.com/ewtnespanol/picture?width=200&height=200",
+                url: "https://cdn3.wowza.com/1/YW5wSWZiRGd2eFlU/bGV0aVBq/hls/live/playlist.m3u8",
+                isOffline: false
+            }
+        ];
 
         const video = document.getElementById('videoPlayer');
         const playStopBtn = document.getElementById('playStopBtn');
         const playIcon = document.getElementById('playIcon');
         const stopIcon = document.getElementById('stopIcon');
+        const reloadBtn = document.getElementById('reloadBtn');
+        const centerLoadingOverlay = document.getElementById('centerLoadingOverlay');
+        const centerLoadingLabel = document.getElementById('centerLoadingLabel');
+        const subtitleMenuContainer = document.getElementById('subtitleMenuContainer');
+        const subtitleBtn = document.getElementById('subtitleBtn');
+        const subtitlePopupMenu = document.getElementById('subtitlePopupMenu');
         const qualityBtn = document.getElementById('qualityBtn');
         const qualityPopupMenu = document.getElementById('qualityPopupMenu');
         const fullscreenBtn = document.getElementById('fullscreenBtn');
@@ -867,6 +1312,7 @@
         const playerWrapper = document.getElementById('playerWrapper');
         const playerChannelLogo = document.getElementById('playerChannelLogo');
         const playerChannelName = document.getElementById('playerChannelName');
+        const playerStatusBadge = document.getElementById('playerStatusBadge');
 
         const volumeBtn = document.getElementById('volumeBtn');
         const volumeSlider = document.getElementById('volumeSlider');
@@ -896,10 +1342,14 @@
         let currentChannel = null;
         let controlsTimeout = null;
         let channelLoadTimeout = null;
+        let statusScanTimer = null;
+        let lowBufferCount = 0;
+        let isStreamBuffering = false;
+        let isFatalServerError = false;
 
         const TIEMPO_OCULTAR_CONTROLES = 2500;
 
-        // --- AVISO DE ERROR DE CONEXIÓN (ESTILO INDEX) ---
+        // --- AVISO DE ERROR DE CONEXIÓN ---
         const errorOverlay = document.createElement('div');
         errorOverlay.id = 'channelErrorOverlay';
         errorOverlay.style.position = 'absolute';
@@ -927,70 +1377,118 @@
         `;
         playerWrapper.appendChild(errorOverlay);
 
+        function setCenterSpinner(show, text = "Cargando flujo...") {
+            if (!centerLoadingOverlay) return;
+            if (show && !isFatalServerError) {
+                if (centerLoadingLabel) centerLoadingLabel.textContent = text;
+                centerLoadingOverlay.classList.add('active');
+            } else {
+                centerLoadingOverlay.classList.remove('active');
+            }
+        }
+
         function mostrarErrorServidor() {
+            isFatalServerError = true;
+            isStreamBuffering = false;
+            setCenterSpinner(false);
             errorOverlay.style.opacity = '1';
             errorOverlay.style.zIndex = '10';
             errorOverlay.style.pointerEvents = 'auto';
+            if (reloadBtn) reloadBtn.style.display = 'flex';
+            if (currentChannel) {
+                setChannelOfflineState(currentChannel, true);
+            }
         }
 
         function ocultarErrorServidor() {
+            isFatalServerError = false;
             errorOverlay.style.opacity = '0';
             errorOverlay.style.pointerEvents = 'none';
         }
 
-        // --- CARGA AUTOMÁTICA DEL ARCHIVO tv.m3u8 LOCAL ---
-        window.addEventListener('DOMContentLoaded', () => {
-            fetch('canal.m3u8')
-                .then(response => {
-                    if (!response.ok) throw new Error('No se pudo encontrar el archivo canal.m3u8');
-                    return response.text();
-                })
-                .then(data => {
-                    parseM3U(data);
-                })
-                .catch(err => {
-                    console.error(err);
-                    channelListContainer.innerHTML = `<div style="padding: 20px; text-align: center; color: #ff5252; font-size: 0.9rem;">Error: No se encontró el archivo <strong>tv.m3u8</strong> en la misma carpeta.</div>`;
-                    playerChannelName.textContent = "Error al cargar canal.m3u8";
-                });
-        });
-
-        // Parser de M3U
-        function parseM3U(data) {
-            channels = [];
-            const lines = data.split(/\r?\n/);
-            let currentChannelObj = null;
-
-            for (let i = 0; i < lines.length; i++) {
-                let line = lines[i].trim();
-                if (line.startsWith('#EXTINF:')) {
-                    currentChannelObj = { name: "Canal sin nombre", logo: defaultLogo, url: "" };
-
-                    const logoMatch = line.match(/tvg-logo="([^"]+)"/);
-                    if (logoMatch && logoMatch[1]) {
-                        currentChannelObj.logo = logoMatch[1];
+        function updateSingleBadgeDom(channel) {
+            if (!channel) return;
+            if (channel.badgeEl) {
+                const textNode = channel.badgeEl.lastChild;
+                if (channel.isOffline) {
+                    channel.badgeEl.classList.add('offline');
+                    if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+                        textNode.textContent = ' OFFLINE';
                     }
-
-                    const commaIndex = line.lastIndexOf(',');
-                    if (commaIndex !== -1) {
-                        currentChannelObj.name = line.substring(commaIndex + 1).trim();
+                } else {
+                    channel.badgeEl.classList.remove('offline');
+                    if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+                        textNode.textContent = ' EN VIVO';
                     }
-                } else if (line && !line.startsWith('#') && currentChannelObj) {
-                    currentChannelObj.url = line;
-                    channels.push(currentChannelObj);
-                    currentChannelObj = null;
                 }
             }
-
-            renderChannels();
-            if (channels.length > 0) {
-                loadChannel(channels[0]);
+            if (currentChannel && currentChannel.url === channel.url && playerStatusBadge) {
+                if (channel.isOffline) {
+                    playerStatusBadge.classList.add('offline');
+                    playerStatusBadge.innerHTML = `<span class="live-dot"></span> OFFLINE`;
+                } else {
+                    playerStatusBadge.classList.remove('offline');
+                    playerStatusBadge.innerHTML = `<span class="live-dot"></span> EN VIVO`;
+                }
             }
         }
 
-        function renderChannels(filter = "") {
+        function setChannelOfflineState(channel, isOffline) {
+            if (!channel || channel.isOffline === isOffline) return;
+            channel.isOffline = isOffline;
+            updateSingleBadgeDom(channel);
+        }
+
+        // COMPROBACIÓN LIGERA EN SEGUNDO PLANO PARA MOSTRAR EN VIVO / OFFLINE AL INGRESAR
+        async function probeChannelStream(channel) {
+            if (!channel || !channel.url) {
+                setChannelOfflineState(channel, true);
+                return;
+            }
+            if (currentChannel && currentChannel.url === channel.url && !isFatalServerError) {
+                setChannelOfflineState(channel, false);
+                return;
+            }
+
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 3500);
+            try {
+                const res = await fetch(channel.url.trim(), {
+                    method: 'GET',
+                    signal: controller.signal,
+                    cache: 'no-store'
+                });
+                clearTimeout(timer);
+                if (!res.ok) {
+                    setChannelOfflineState(channel, true);
+                    return;
+                }
+                const text = await res.text();
+                const looksLikePlaylist =
+                    text.includes('#EXTM3U') ||
+                    text.includes('#EXT-X-STREAM-INF') ||
+                    text.includes('#EXTINF:');
+                setChannelOfflineState(channel, !looksLikePlaylist);
+            } catch {
+                clearTimeout(timer);
+                setChannelOfflineState(channel, true);
+            }
+        }
+
+        async function checkChannelsLiveStatus() {
+            const batchSize = 5;
+            for (let i = 0; i < channels.length; i += batchSize) {
+                const batch = channels.slice(i, i + batchSize);
+                await Promise.all(batch.map(ch => probeChannelStream(ch)));
+                await new Promise(resolve => setTimeout(resolve, 90));
+            }
+        }
+
+        function renderChannels() {
+            const filter = searchBox.value.trim().toLowerCase();
             channelListContainer.innerHTML = "";
-            const filtered = channels.filter(c => c.name.toLowerCase().includes(filter.toLowerCase()));
+
+            const filtered = channels.filter(c => c.name.toLowerCase().includes(filter));
 
             if (filtered.length === 0) {
                 channelListContainer.innerHTML = `<div style="padding: 20px; text-align: center; color: rgba(255,255,255,0.4); font-size: 0.9rem;">No se encontraron canales</div>`;
@@ -1000,20 +1498,58 @@
             filtered.forEach((channel) => {
                 const item = document.createElement('div');
                 const isActive = currentChannel && currentChannel.url === channel.url;
-                item.className = `channel-item ${isActive ? 'active' : ''}`;
-                item.innerHTML = `
-                    <img class="channel-logo" src="${channel.logo}" alt="${channel.name}" onerror="this.src='${defaultLogo}'" />
-                    <div class="channel-details">
-                        <span class="channel-title">${channel.name}</span>
-                        <span class="channel-badge"><span class="live-dot"></span> EN VIVO</span>
-                    </div>
-                `;
+                const isOffline = Boolean(channel.isOffline);
 
-                item.addEventListener('click', () => {
-                    loadChannel(channel);
+                item.className = `channel-item ${isActive ? 'active' : ''}`;
+                item.setAttribute('tabindex', '0');
+
+                const imgEl = document.createElement('img');
+                imgEl.className = 'channel-logo';
+                imgEl.src = channel.logo;
+                imgEl.alt = channel.name;
+                imgEl.onerror = () => { imgEl.src = defaultLogo; };
+
+                const detailsEl = document.createElement('div');
+                detailsEl.className = 'channel-details';
+
+                const titleEl = document.createElement('span');
+                titleEl.className = 'channel-title';
+                titleEl.textContent = channel.name;
+
+                const metaRow = document.createElement('div');
+                metaRow.className = 'channel-meta-row';
+
+                const badgeSpan = document.createElement('span');
+                badgeSpan.className = `channel-badge ${isOffline ? 'offline' : ''}`;
+                badgeSpan.innerHTML = `<span class="live-dot"></span>`;
+                badgeSpan.appendChild(document.createTextNode(isOffline ? ' OFFLINE' : ' EN VIVO'));
+                channel.badgeEl = badgeSpan;
+
+                const groupSpan = document.createElement('span');
+                groupSpan.className = 'channel-group-tag';
+                groupSpan.textContent = channel.group || '';
+
+                metaRow.appendChild(badgeSpan);
+                if (channel.group) metaRow.appendChild(groupSpan);
+
+                detailsEl.appendChild(titleEl);
+                detailsEl.appendChild(metaRow);
+                item.appendChild(imgEl);
+                item.appendChild(detailsEl);
+
+                const selectHandler = () => {
                     document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
                     item.classList.add('active');
                     closeMobileSidebar();
+                    loadChannel(channel);
+                };
+
+                item.addEventListener('click', selectHandler);
+                item.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        selectHandler();
+                    }
                 });
 
                 channelListContainer.appendChild(item);
@@ -1051,22 +1587,147 @@
             closeMobileSidebar();
         });
 
+        function setupSubtitleMenu() {
+            subtitlePopupMenu.innerHTML = "";
+            subtitleBtn.classList.remove('cc-active');
+
+            const hlsTracks = (hls && Array.isArray(hls.subtitleTracks)) ? hls.subtitleTracks : [];
+            const nativeTextTracks = Array.from(video.textTracks || []).filter(t => t.kind === 'subtitles' || t.kind === 'captions');
+
+            if (hlsTracks.length === 0 && nativeTextTracks.length === 0) {
+                subtitleMenuContainer.style.display = 'none';
+                subtitlePopupMenu.classList.remove('show');
+                return;
+            }
+
+            subtitleMenuContainer.style.display = 'block';
+
+            const header = document.createElement('div');
+            header.className = 'popup-menu-header';
+            header.textContent = 'Subtítulos';
+            subtitlePopupMenu.appendChild(header);
+
+            const optionElements = [];
+
+            const offOption = document.createElement('div');
+            const isCurrentlyOff = hlsTracks.length > 0
+                ? hls.subtitleTrack === -1
+                : nativeTextTracks.every(t => t.mode !== 'showing');
+
+            offOption.className = `quality-option ${isCurrentlyOff ? 'selected' : ''}`;
+            offOption.innerHTML = `
+                <span class="quality-check">✓</span>
+                <div class="quality-title-group">
+                    <span>Desactivados</span>
+                </div>
+            `;
+            offOption.addEventListener('click', () => {
+                if (hls && hlsTracks.length > 0) {
+                    hls.subtitleTrack = -1;
+                    hls.subtitleDisplay = false;
+                }
+                nativeTextTracks.forEach(t => { t.mode = 'disabled'; });
+                optionElements.forEach(el => el.classList.remove('selected'));
+                offOption.classList.add('selected');
+                subtitleBtn.classList.remove('cc-active');
+                subtitlePopupMenu.classList.remove('show');
+            });
+            subtitlePopupMenu.appendChild(offOption);
+            optionElements.push(offOption);
+
+            if (hlsTracks.length > 0) {
+                hlsTracks.forEach((track, idx) => {
+                    const option = document.createElement('div');
+                    const isSelected = hls.subtitleTrack === idx;
+                    if (isSelected) subtitleBtn.classList.add('cc-active');
+
+                    const label = track.name || track.lang || `Subtítulo ${idx + 1}`;
+                    const langTag = track.lang ? track.lang.toUpperCase() : '';
+
+                    option.className = `quality-option ${isSelected ? 'selected' : ''}`;
+                    option.innerHTML = `
+                        <span class="quality-check">✓</span>
+                        <div class="quality-title-group">
+                            <span>${label}</span>
+                        </div>
+                        ${langTag ? `<span class="quality-details-text">${langTag}</span>` : ''}
+                    `;
+
+                    option.addEventListener('click', () => {
+                        hls.subtitleTrack = idx;
+                        hls.subtitleDisplay = true;
+                        optionElements.forEach(el => el.classList.remove('selected'));
+                        option.classList.add('selected');
+                        subtitleBtn.classList.add('cc-active');
+                        subtitlePopupMenu.classList.remove('show');
+                    });
+
+                    subtitlePopupMenu.appendChild(option);
+                    optionElements.push(option);
+                });
+            } else {
+                nativeTextTracks.forEach((track, idx) => {
+                    const option = document.createElement('div');
+                    const isSelected = track.mode === 'showing';
+                    if (isSelected) subtitleBtn.classList.add('cc-active');
+
+                    const label = track.label || track.language || `Subtítulo ${idx + 1}`;
+                    const langTag = track.language ? track.language.toUpperCase() : '';
+
+                    option.className = `quality-option ${isSelected ? 'selected' : ''}`;
+                    option.innerHTML = `
+                        <span class="quality-check">✓</span>
+                        <div class="quality-title-group">
+                            <span>${label}</span>
+                        </div>
+                        ${langTag ? `<span class="quality-details-text">${langTag}</span>` : ''}
+                    `;
+
+                    option.addEventListener('click', () => {
+                        nativeTextTracks.forEach((t, i) => {
+                            t.mode = (i === idx) ? 'showing' : 'disabled';
+                        });
+                        optionElements.forEach(el => el.classList.remove('selected'));
+                        option.classList.add('selected');
+                        subtitleBtn.classList.add('cc-active');
+                        subtitlePopupMenu.classList.remove('show');
+                    });
+
+                    subtitlePopupMenu.appendChild(option);
+                    optionElements.push(option);
+                });
+            }
+        }
+
         function loadChannel(channel) {
             if (!channel || !channel.url) {
-                console.error("Canal sin URL válida:", channel);
                 mostrarErrorServidor();
                 return;
             }
 
             currentChannel = channel;
             qualityPopupMenu.classList.remove('show');
+            subtitlePopupMenu.classList.remove('show');
+            subtitleMenuContainer.style.display = 'none';
+            reloadBtn.style.display = 'none';
+            lowBufferCount = 0;
+            isStreamBuffering = true;
+            setCenterSpinner(true, "Cargando flujo...");
+
             playerChannelLogo.src = channel.logo || defaultLogo;
             playerChannelName.textContent = channel.name || "Canal";
+
+            if (channel.isOffline) {
+                playerStatusBadge.classList.add('offline');
+                playerStatusBadge.innerHTML = `<span class="live-dot"></span> OFFLINE`;
+            } else {
+                playerStatusBadge.classList.remove('offline');
+                playerStatusBadge.innerHTML = `<span class="live-dot"></span> EN VIVO`;
+            }
 
             ocultarErrorServidor();
             if (channelLoadTimeout) clearTimeout(channelLoadTimeout);
 
-            // Detener y limpiar la reproducción anterior antes de cargar otro canal.
             if (hls) {
                 hls.destroy();
                 hls = null;
@@ -1075,61 +1736,81 @@
             video.removeAttribute('src');
             video.load();
 
-            // Quitar manejadores anteriores para no acumular eventos al cambiar de canal.
             video.onplaying = null;
             video.onerror = null;
             video.onloadedmetadata = null;
+            video.onwaiting = null;
+            video.onstalled = null;
+            video.oncanplay = null;
 
             channelLoadTimeout = setTimeout(() => {
                 if (video.paused || video.readyState < 2) {
-                    console.error("El canal no comenzó a reproducirse:", channel.url);
                     mostrarErrorServidor();
                 }
-            }, 12000);
+            }, 10000);
 
             video.onplaying = () => {
+                isStreamBuffering = false;
                 ocultarErrorServidor();
+                setCenterSpinner(false);
+                setChannelOfflineState(channel, false);
                 if (channelLoadTimeout) {
                     clearTimeout(channelLoadTimeout);
                     channelLoadTimeout = null;
                 }
             };
 
+            video.oncanplay = () => {
+                if (!video.paused && video.readyState >= 3) {
+                    isStreamBuffering = false;
+                    setCenterSpinner(false);
+                }
+            };
+
+            video.onwaiting = () => {
+                isStreamBuffering = true;
+                reloadBtn.style.display = 'flex';
+                setCenterSpinner(true, "Buffer bajo...");
+            };
+
+            video.onstalled = () => {
+                isStreamBuffering = true;
+                reloadBtn.style.display = 'flex';
+                setCenterSpinner(true, "Cargando segmentos...");
+            };
+
             video.onerror = () => {
-                console.error("Error del elemento de vídeo:", video.error, channel.url);
                 mostrarErrorServidor();
             };
 
-            // HLS en Chrome, Edge y otros navegadores con Media Source Extensions.
             if (typeof Hls !== "undefined" && Hls.isSupported()) {
                 hls = new Hls({
                     maxBufferLength: 10,
                     maxMaxBufferLength: 20,
-
                     liveSyncDurationCount: 3,
                     liveMaxLatencyDurationCount: 6,
                     lowLatencyMode: false,
-
                     enableWorker: true,
-
-                    manifestLoadingTimeOut: 20000,
-                    manifestLoadingMaxRetry: 5,
-                    manifestLoadingRetryDelay: 1000,
-
-                    levelLoadingTimeOut: 20000,
-                    levelLoadingMaxRetry: 5,
-                    levelLoadingRetryDelay: 1000,
-
-                    fragLoadingTimeOut: 30000,
-                    fragLoadingMaxRetry: 6,
-                    fragLoadingRetryDelay: 1000
+                    manifestLoadingTimeOut: 10000,
+                    manifestLoadingMaxRetry: 2,
+                    manifestLoadingRetryDelay: 500,
+                    levelLoadingTimeOut: 10000,
+                    levelLoadingMaxRetry: 2,
+                    levelLoadingRetryDelay: 500,
+                    fragLoadingTimeOut: 12000,
+                    fragLoadingMaxRetry: 3,
+                    fragLoadingRetryDelay: 500
                 });
 
                 hls.on(Hls.Events.ERROR, (event, data) => {
-                    console.error("Error HLS:", data.type, data.details, data);
+                    if (data.type === Hls.ErrorTypes.NETWORK_ERROR || data.details === Hls.ErrorDetails.BUFFER_STALLED_ERROR) {
+                        isStreamBuffering = true;
+                        reloadBtn.style.display = 'flex';
+                        setCenterSpinner(true, "Buffer bajo...");
+                    }
+
                     if (!data.fatal) return;
 
-                    // No volver a llamar loadChannel() recursivamente: puede crear un bucle.
                     if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
                         hls.startLoad();
                     } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
@@ -1144,13 +1825,19 @@
                 });
 
                 hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    setChannelOfflineState(channel, false);
                     setupQualityMenu();
+                    setupSubtitleMenu();
                     video.play().then(() => {
                         updatePlayState(true);
-                    }).catch((err) => {
-                        console.warn("El navegador requiere que pulses reproducir:", err);
+                    }).catch(() => {
+                        setCenterSpinner(false);
                         updatePlayState(false);
                     });
+                });
+
+                hls.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, () => {
+                    setupSubtitleMenu();
                 });
 
                 hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
@@ -1167,21 +1854,21 @@
                 hls.loadSource(channel.url.trim());
                 hls.attachMedia(video);
 
-            // HLS nativo (por ejemplo Safari), si el navegador lo admite.
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                 video.src = channel.url.trim();
                 video.onloadedmetadata = () => {
+                    setChannelOfflineState(channel, false);
+                    setupSubtitleMenu();
                     video.play().then(() => {
                         updatePlayState(true);
-                    }).catch((err) => {
-                        console.warn("El navegador requiere que pulses reproducir:", err);
+                    }).catch(() => {
+                        setCenterSpinner(false);
                         updatePlayState(false);
                     });
                 };
                 video.load();
 
             } else {
-                console.error("Este navegador no admite HLS en este dispositivo.");
                 if (channelLoadTimeout) {
                     clearTimeout(channelLoadTimeout);
                     channelLoadTimeout = null;
@@ -1190,9 +1877,24 @@
             }
         }
 
+        reloadBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!currentChannel) return;
+
+            reloadBtn.classList.add('spinning');
+            setTimeout(() => {
+                reloadBtn.classList.remove('spinning');
+            }, 900);
+
+            loadChannel(currentChannel);
+        });
+
         function updatePlayState(isPlaying) {
             playIcon.style.display = isPlaying ? 'none' : 'block';
             stopIcon.style.display = isPlaying ? 'block' : 'none';
+            if (!isPlaying) {
+                setCenterSpinner(false);
+            }
         }
 
         function setupQualityMenu() {
@@ -1285,6 +1987,7 @@
                 if (hls) {
                     video.currentTime = hls.liveSyncPosition ?? video.duration;
                 }
+                setCenterSpinner(true, "Cargando flujo...");
                 video.play().then(() => {
                     updatePlayState(true);
                 }).catch(() => {
@@ -1335,14 +2038,24 @@
 
         actualizarBarraVolumen(volumeSlider.value);
 
+        subtitleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            qualityPopupMenu.classList.remove('show');
+            subtitlePopupMenu.classList.toggle('show');
+        });
+
         qualityBtn.addEventListener('click', (e) => {
             e.stopPropagation();
+            subtitlePopupMenu.classList.remove('show');
             qualityPopupMenu.classList.toggle('show');
         });
 
         document.addEventListener('click', (e) => {
-            if (!qualityBtn.contains(e.target)) {
+            if (!qualityBtn.contains(e.target) && !qualityPopupMenu.contains(e.target)) {
                 qualityPopupMenu.classList.remove('show');
+            }
+            if (!subtitleBtn.contains(e.target) && !subtitlePopupMenu.contains(e.target)) {
+                subtitlePopupMenu.classList.remove('show');
             }
         });
 
@@ -1418,7 +2131,7 @@
             }, 3000);
         });
 
-        searchBox.addEventListener('input', (e) => renderChannels(e.target.value));
+        searchBox.addEventListener('input', renderChannels);
 
         function showControlsTemporarily() {
             playerWrapper.classList.remove('hide-controls');
@@ -1433,6 +2146,7 @@
                         playerWrapper.classList.add('normal-autohide');
                     }
                     if (qualityPopupMenu) qualityPopupMenu.classList.remove('show');
+                    if (subtitlePopupMenu) subtitlePopupMenu.classList.remove('show');
                 }
             }, TIEMPO_OCULTAR_CONTROLES);
         }
@@ -1443,7 +2157,7 @@
 
         function handleFullscreenTouch(e) {
             if (!document.fullscreenElement) return;
-            if (e.target.closest('.quality-popup-menu, .sidebar, .mobile-menu-btn, .controls-overlay, .player-header')) return;
+            if (e.target.closest('.quality-popup-menu, .subtitle-popup-menu, .sidebar, .mobile-menu-btn, .controls-overlay, .player-header')) return;
 
             playerWrapper.classList.remove('hide-controls');
             showControlsTemporarily();
@@ -1464,23 +2178,78 @@
         });
 
         setInterval(() => {
+            if (!currentChannel || isFatalServerError) return;
+
+            let duration = 0;
             if (video.buffered.length > 0) {
                 const bufferedEnd = video.buffered.end(video.buffered.length - 1);
-                const duration = bufferedEnd - video.currentTime;
-                bufferValue.textContent = `Buffer: ${duration.toFixed(1)}s`;
-                bufferDot.classList.toggle('low', duration < 2);
+                duration = Math.max(0, bufferedEnd - video.currentTime);
             }
-        }, 1000);
+
+            bufferValue.textContent = `Buffer: ${duration.toFixed(1)}s`;
+            const isLowBuffer = duration < 2.0;
+            const isVeryLowBuffer = duration < 1.2;
+            bufferDot.classList.toggle('low', isLowBuffer);
+
+            if (!video.paused && (isStreamBuffering || (isVeryLowBuffer && video.readyState < 4))) {
+                setCenterSpinner(true, `Buffer bajo (${duration.toFixed(1)}s)...`);
+            } else if (!isStreamBuffering && duration >= 1.5 && video.readyState >= 3) {
+                setCenterSpinner(false);
+            }
+
+            if (isLowBuffer && !video.paused) {
+                lowBufferCount++;
+                if (lowBufferCount >= 2 || video.readyState < 3) {
+                    reloadBtn.style.display = 'flex';
+                }
+            } else if (duration >= 3.0 && video.readyState >= 3) {
+                lowBufferCount = 0;
+                reloadBtn.style.display = 'none';
+            }
+        }, 800);
 
         document.addEventListener('touchstart', function unmuter() {
             if (video.muted) {
                 video.muted = false;
-                if (typeof updateVolumeSliderBackground === 'function') {
-                    updateVolumeSliderBackground(video.volume);
+                if (typeof actualizarBarraVolumen === 'function') {
+                    actualizarBarraVolumen(video.volume);
                 }
             }
             document.removeEventListener('touchstart', unmuter);
         }, { once: true });
+
+        document.addEventListener('keydown', (e) => {
+            if (document.activeElement === searchBox) return;
+            if (channels.length === 0) return;
+
+            let currentIndex = channels.findIndex(c => currentChannel && c.url === currentChannel.url);
+            if (currentIndex === -1) currentIndex = 0;
+
+            if (e.code === 'ChannelDown' || e.key === 'ChannelDown' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                currentIndex = (currentIndex + 1) % channels.length;
+                loadChannel(channels[currentIndex]);
+                renderChannels();
+            } else if (e.code === 'ChannelUp' || e.key === 'ChannelUp' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                currentIndex = (currentIndex - 1 + channels.length) % channels.length;
+                loadChannel(channels[currentIndex]);
+                renderChannels();
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            if (channels.length > 0) {
+                currentChannel = channels[0];
+                renderChannels();
+                loadChannel(channels[0]);
+
+                if (statusScanTimer) clearTimeout(statusScanTimer);
+                statusScanTimer = setTimeout(() => {
+                    checkChannelsLiveStatus();
+                }, 900);
+            }
+        });
     </script>
 </body>
 

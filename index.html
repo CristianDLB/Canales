@@ -8,6 +8,9 @@
 
     <link rel="icon" type="image/png" href="logo.png?v=1">
 
+    <!-- Librerías Externas -->
+    <script src="https://kit.fontawesome.com/d9fcacfc99.js" crossorigin="anonymous"></script>
+
     <!-- Hls.js Library -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
     <style>
@@ -28,13 +31,9 @@
             width: 100vw;
             /* NO SELECCIONAR NADA */
             -webkit-user-select: none;
-            /* Safari */
-            -moz-user-select: Firefox;
-            /* Firefox */
+            -moz-user-select: none;
             -ms-user-select: none;
-            /* Internet Explorer/Edge */
             user-select: none;
-            /* Estándar moderno */
         }
 
         .app-container {
@@ -46,7 +45,7 @@
             flex-direction: row;
         }
 
-        /* LOGO ESTILO  */
+        /* LOGO ESTILO */
         .sidebar-brand img {
             width: 30px;
             height: 30px;
@@ -212,9 +211,7 @@
             min-height: 50px;
             border-radius: 8px;
             object-fit: contain;
-            /* Cambiado de cover a contain para que no se recorte */
             padding: 4px;
-            /* Un pequeño respiro para que la imagen no pegue a los bordes */
             background: #1a1a1f;
             border: 1px solid rgba(255, 255, 255, 0.08);
             flex-shrink: 0;
@@ -236,6 +233,20 @@
             text-overflow: ellipsis;
         }
 
+        /* ICONO PARA NEW TARGET */
+        .channel-title-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+        }
+
+        .channel-external-icon {
+            font-size: 13px;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
         .channel-badge {
             display: inline-flex;
             align-items: center;
@@ -244,6 +255,7 @@
             font-weight: 700;
             color: #e50914;
             letter-spacing: 0.5px;
+            transition: color 0.3s ease;
         }
 
         .live-dot {
@@ -252,6 +264,27 @@
             background-color: #e50914;
             border-radius: 50%;
             box-shadow: 0 0 6px #e50914;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* ESTADO OFFLINE MORADO */
+        .channel-badge.offline {
+            color: #a855f7;
+        }
+
+        .channel-badge.offline .live-dot {
+            background-color: #a855f7;
+            box-shadow: 0 0 6px #a855f7;
+        }
+
+        /* ESTADO OPEN IN TAB AZUL (PARA targetBlank: true) */
+        .channel-badge.open-tab {
+            color: #3b82f6;
+        }
+
+        .channel-badge.open-tab .live-dot {
+            background-color: #3b82f6;
+            box-shadow: 0 0 6px #3b82f6;
         }
 
         /* ÁREA PRINCIPAL */
@@ -281,6 +314,38 @@
             display: block;
         }
 
+        /* SPINNER CENTRAL GIRANDO EN MEDIO DEL REPRODUCTOR */
+        #centerLoadingSpinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 56px;
+            height: 56px;
+            margin-top: -28px;
+            margin-left: -28px;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top-color: #e50914;
+            border-radius: 50%;
+            z-index: 25;
+            display: none;
+            pointer-events: none;
+            animation: spinCenter 0.8s linear infinite;
+            box-shadow: 0 0 18px rgba(0, 0, 0, 0.65);
+        }
+
+        #centerLoadingSpinner.visible {
+            display: block;
+        }
+
+        @keyframes spinCenter {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
         .player-header {
             position: absolute;
             top: 0;
@@ -303,9 +368,7 @@
             min-height: 50px;
             border-radius: 8px;
             object-fit: contain;
-            /* Cambiado de cover a contain para que no se recorte */
             padding: 4px;
-            /* Un pequeño respiro para que la imagen no pegue a los bordes */
             background: #1a1a1f;
             border: 1px solid rgba(255, 255, 255, 0.08);
             flex-shrink: 0;
@@ -380,6 +443,7 @@
             border-radius: 50%;
             transition: background 0.2s ease, transform 0.1s ease;
             flex-shrink: 0;
+            position: relative;
         }
 
         .btn-control:hover {
@@ -391,6 +455,32 @@
             width: 22px;
             height: 22px;
             fill: #fff;
+        }
+
+        /* ANIMACIÓN DE GIRO AL RECARGAR */
+        @keyframes spinReload {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .btn-control.spinning svg {
+            animation: spinReload 0.6s linear infinite;
+        }
+
+        /* INDICADOR DE SUBTÍTULOS ACTIVOS */
+        .btn-control.cc-active::after {
+            content: '';
+            position: absolute;
+            bottom: 6px;
+            left: 10px;
+            right: 10px;
+            height: 2.5px;
+            background-color: #e50914;
+            border-radius: 2px;
         }
 
         .live-indicator {
@@ -407,12 +497,14 @@
             white-space: nowrap;
         }
 
-        /* MENÚ DE CALIDAD */
-        .quality-menu-container {
+        /* MENÚS POPUP (CALIDAD Y SUBTÍTULOS) */
+        .quality-menu-container,
+        .subtitle-menu-container {
             position: relative;
         }
 
-        .quality-popup-menu {
+        .quality-popup-menu,
+        .subtitle-popup-menu {
             position: absolute;
             bottom: 50px;
             right: 0;
@@ -428,8 +520,24 @@
             z-index: 50;
         }
 
-        .quality-popup-menu.show {
+        .subtitle-popup-menu {
+            width: 220px;
+        }
+
+        .quality-popup-menu.show,
+        .subtitle-popup-menu.show {
             display: flex;
+        }
+
+        .popup-menu-header {
+            padding: 6px 16px 8px 16px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: rgba(255, 255, 255, 0.5);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 4px;
         }
 
         .quality-option {
@@ -516,13 +624,15 @@
             box-shadow: 0 0 6px #dc3545;
         }
 
-        /* ESTADOS DE VISIBILIDAD DINÁMICA (SOLO EN PANTALLA COMPLETA O CUANDO ESTÁ ACTIVO EL HOVER EN NORMAL) */
+        /* ESTADOS DE VISIBILIDAD DINÁMICA */
         .player-wrapper.in-fullscreen.hide-controls .controls-overlay,
         .player-wrapper.in-fullscreen.hide-controls .player-header,
         .player-wrapper.in-fullscreen.hide-controls #qualityPopupMenu,
+        .player-wrapper.in-fullscreen.hide-controls #subtitlePopupMenu,
         .player-wrapper.normal-autohide .controls-overlay,
         .player-wrapper.normal-autohide .player-header,
-        .player-wrapper.normal-autohide #qualityPopupMenu {
+        .player-wrapper.normal-autohide #qualityPopupMenu,
+        .player-wrapper.normal-autohide #subtitlePopupMenu {
             opacity: 0 !important;
             visibility: hidden !important;
             pointer-events: none !important;
@@ -546,7 +656,6 @@
             max-width: 0;
             opacity: 0;
             overflow: visible !important;
-            /* Cambiado para que no corte la bolita */
             transition: max-width 0.3s ease, opacity 0.3s ease;
             display: flex;
             align-items: center;
@@ -599,7 +708,6 @@
             position: relative;
             z-index: 99;
             margin-top: -4px;
-            /* Centra perfectamente la bolita sobre la línea de 6px */
         }
 
         /* ESTILOS PARA EL BOTÓN "MÁS CANALES" */
@@ -635,7 +743,6 @@
             fill: #fff;
             flex-shrink: 0;
         }
-
 
         /* ADAPTACIÓN MÓVIL OPTIMIZADA */
         @media (max-width: 768px) {
@@ -736,7 +843,8 @@
 
             .player-wrapper.mobile-show-controls .controls-overlay,
             .player-wrapper.mobile-show-controls .player-header,
-            .player-wrapper.mobile-show-controls #qualityPopupMenu {
+            .player-wrapper.mobile-show-controls #qualityPopupMenu,
+            .player-wrapper.mobile-show-controls #subtitlePopupMenu {
                 opacity: 1 !important;
                 visibility: visible !important;
                 pointer-events: auto !important;
@@ -744,6 +852,12 @@
 
             .quality-popup-menu {
                 width: 250px;
+                right: 0;
+                bottom: 45px;
+            }
+
+            .subtitle-popup-menu {
+                width: 200px;
                 right: 0;
                 bottom: 45px;
             }
@@ -756,11 +870,9 @@
     <div class="app-container">
 
         <button class="mobile-menu-btn" id="mobileMenuBtn" title="Abrir Canales">
-            <!-- Icono de Hamburguesa (Visible por defecto) -->
             <svg viewBox="0 0 24 24">
                 <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
             </svg>
-            <!-- Icono de X / Cerrar (Oculto por defecto) -->
             <svg class="close-icon" viewBox="0 0 24 24" style="display:none;">
                 <path
                     d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
@@ -803,9 +915,11 @@
                     <img src="" id="playerChannelLogo" class="player-channel-logo" alt="Logo Canal">
                     <div class="player-channel-info">
                         <span class="player-channel-name" id="playerChannelName">Selecciona un canal</span>
-                        <span class="channel-badge"><span class="live-dot"></span> EN VIVO</span>
+                        <span class="channel-badge" id="playerStatusBadge"><span class="live-dot"></span> EN VIVO</span>
                     </div>
                 </div>
+
+                <div id="centerLoadingSpinner" aria-label="Cargando transmisión"></div>
 
                 <video id="videoPlayer" autoplay muted playsinline></video>
 
@@ -825,9 +939,15 @@
                                 </svg>
                             </button>
 
+                            <!-- BOTÓN RECARGAR ESTILO YOUTUBE (APARECE CON BUFFER BAJO O FALLO) -->
+                            <button class="btn-control" id="reloadBtn" title="Recargar transmisión (Conexión inestable)" style="display:none;">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
+                                </svg>
+                            </button>
+
                             <div class="volume-wrapper">
                                 <button class="btn-control" id="volumeBtn" title="Silenciar">
-                                    <!-- Arreglado: Como arranca muteado, se muestra el icono de Mute y se oculta el de Volumen alto -->
                                     <svg id="volumeHighIcon" viewBox="0 0 24 24" style="display:none;">
                                         <path
                                             d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
@@ -853,6 +973,16 @@
                             <div id="bufferHealth" class="buffer-health-tag">
                                 <span class="buffer-dot"></span>
                                 <span id="bufferValue">Buffer: 0.0s</span>
+                            </div>
+
+                            <!-- OPCIÓN DE SUBTÍTULOS (SOLO SE MUESTRA SI EL M3U8 TIENE SUBTÍTULOS) -->
+                            <div class="subtitle-menu-container" id="subtitleMenuContainer" style="display:none;">
+                                <button class="btn-control" id="subtitleBtn" title="Subtítulos (CC)">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M19 4H5c-1.11 0-2 .9-2 2v12c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 7H9.5v-.5h-2v3h2V13H11v1c0 .55-.45 1-1 1H7c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1h3c.55 0 1 .45 1 1v1zm7 0h-1.5v-.5h-2v3h2V13H18v1c0 .55-.45 1-1 1h-3c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1h3c.55 0 1 .45 1 1v1z"/>
+                                    </svg>
+                                </button>
+                                <div class="subtitle-popup-menu" id="subtitlePopupMenu"></div>
                             </div>
 
                             <div class="quality-menu-container">
@@ -891,7 +1021,7 @@
             {
                 name: "ATV",
                 logo: "https://upload.wikimedia.org/wikipedia/commons/9/9d/ATV_%28Peru%29_-_2018_logo.png",
-                url: "https://d19e55ehz2il4i.cloudfront.net/ts:abr.m3u8"
+                url: "https://ddycmnicl95kp.cloudfront.net/live/1wk5g7itgjof/master.m3u8"
             },
             {
                 name: "America TV",
@@ -899,19 +1029,9 @@
                 url: "https://live-bd1.tv360.bitel.com.pe/manifest/america/master_clean_source.m3u8"
             },
             {
-                name: "Exitosa",
-                logo: "https://graph.facebook.com/Exitosanoticias/picture?width=200&height=200",
-                url: "https://luna-4-video.mediaserver.digital/exitosatv_233b-4b49-a726-5a451262/index.m3u8"
-            },
-            {
-                name: "El Chavo",
-                logo: "https://gia.tv/streams/pptv/211465.png",
-                url: "https://live20.bozztv.com/giatvplayout7/giatv-211465/playlist.m3u8"
-            },
-            {
-                name: "Liga 1 Max",
-                logo: "https://next-liga1.fanatiz.com/liga1/strapi/production/image_LIGA_1_MAX_fabe3155b8.png",
-                url: "https://cablered.iptvperu.tv:1936/cablered/liga1max.stream/playlist.m3u8"
+                name: "Tv Perú",
+                logo: "https://upload.wikimedia.org/wikipedia/commons/5/56/Tv_Per%C3%BA_-_Logo_2019_Reducido_%28TVPE%29.svg",
+                url: "https://cablered.iptvperu.tv:1936/cablered/tvperu_new/playlist.m3u8"
             },
             {
                 name: "Global Tv",
@@ -919,23 +1039,60 @@
                 url: "https://cablered.iptvperu.tv:1936/cablered/global.stream/playlist.m3u8"
             },
             {
-                name: "Tv Perú",
-                logo: "https://upload.wikimedia.org/wikipedia/commons/5/56/Tv_Per%C3%BA_-_Logo_2019_Reducido_%28TVPE%29.svg",
-                url: "https://cablered.iptvperu.tv:1936/cablered/tvperu_new/playlist.m3u8"
+                name: "Willax Tv",
+                logo: "https://willax.pe/wp-content/uploads/2024/10/cropped-Logo-willax-horizontal-ai-32x32.webp",
+                url: "https://cdndirector.dailymotion.com/cdn/live/video/xa63dow.m3u8?sec=SvS3edhk1L_d2tEIJr-zEANFkJ9-szYCGxJ3nPd4WYkzO7VEQgBbGA7RTjXrJ-vx3fN-bNLHKdjKp4FaafILtEW0wDgrCyb4IR-ob_7xhVw"
+            },
+            {
+                name: "Exitosa",
+                logo: "https://graph.facebook.com/Exitosanoticias/picture?width=200&height=200",
+                url: "https://luna-4-video.mediaserver.digital/exitosatv_233b-4b49-a726-5a451262/index.m3u8"
+            },
+            {
+                name: "RPP Tv",
+                logo: "https://upload.wikimedia.org/wikipedia/commons/3/36/RPP_logo.png",
+                url: "https://redirector.rudo.video/hls-video/567ffde3fa319fadf3419efda25619456231dfea/rpptv/rpptv.smil/playlist.m3u8"
+            },
+            {
+                name: "El Chavo",
+                logo: "https://gia.tv/streams/pptv/211465.png",
+                url: "https://183.giatvcdn.com/giatvplayout7/giatv-211465/playlist.m3u8"
+            },
+            {
+                name: "Liga 1 Max",
+                logo: "https://next-liga1.fanatiz.com/liga1/strapi/production/image_LIGA_1_MAX_fabe3155b8.png",
+                url: "https://cablered.iptvperu.tv:1936/cablered/liga1max.stream/playlist.m3u8"
             },
             {
                 name: "Turbo Mix",
                 logo: "https://static.mytuner.mobi/media/tvos_radios/767/radio-turbomix-fm.2943a767.png",
                 url: "https://live-evg11.tv360.bitel.com.pe/bitel/turbomixSRT/playlist.m3u8"
+            },
+            /*      OPCIONES DE TARGET ABRIR CANAL EN UNA VENTANNA NUEVA
+                    TIENE QUE ESTAR ACTIVA PRIEMRO LA EXTENSION M3U8 https://goo.su/3wS0IN             */
+            {
+                name: "Naruto",
+                logo: "https://www.freepnglogos.com/uploads/naruto/naruto-throwing-ball-transparent-png-stickpng-23.png",
+                url: "https://jmp2.uk/plu-5ee92e72fb286e0007285fec.m3u8",
+                targetBlank: true
+            },
+            {
+                name: "One Piece",
+                logo: "https://logos-marcas.com/wp-content/uploads/2021/09/One-Piece-Logo.png",
+                url: "https://jmp2.uk/plu-5ff4b9ccf938f8000779eb99.m3u8",
+                targetBlank: true
             }
-
         ];
 
-        
         const video = document.getElementById('videoPlayer');
         const playStopBtn = document.getElementById('playStopBtn');
         const playIcon = document.getElementById('playIcon');
         const stopIcon = document.getElementById('stopIcon');
+        const reloadBtn = document.getElementById('reloadBtn');
+        const centerLoadingSpinner = document.getElementById('centerLoadingSpinner');
+        const subtitleMenuContainer = document.getElementById('subtitleMenuContainer');
+        const subtitleBtn = document.getElementById('subtitleBtn');
+        const subtitlePopupMenu = document.getElementById('subtitlePopupMenu');
         const qualityBtn = document.getElementById('qualityBtn');
         const qualityPopupMenu = document.getElementById('qualityPopupMenu');
         const fullscreenBtn = document.getElementById('fullscreenBtn');
@@ -944,6 +1101,7 @@
         const playerWrapper = document.getElementById('playerWrapper');
         const playerChannelLogo = document.getElementById('playerChannelLogo');
         const playerChannelName = document.getElementById('playerChannelName');
+        const playerStatusBadge = document.getElementById('playerStatusBadge');
 
         const volumeBtn = document.getElementById('volumeBtn');
         const volumeSlider = document.getElementById('volumeSlider');
@@ -972,8 +1130,10 @@
         let hls = null;
         let currentChannel = null;
         let controlsTimeout = null;
-
-        let channelLoadTimeout = null; //ERROR CONEXION 
+        let channelLoadTimeout = null;
+        let lowBufferCount = 0;
+        let isFatalErrorShown = false;
+        let isStreamWaiting = false;
 
         const TIEMPO_OCULTAR_CONTROLES = 2500;
 
@@ -1003,21 +1163,95 @@
             <span style="font-size: 16px; font-weight: bold; color: #fff; text-align: center; padding: 0 20px;">ERROR AL CONECTAR AL SERVIDOR</span>
             <span style="font-size: 13px; color: #aaa; margin-top: 5px;">El canal no responde o no está disponible.</span>
         `;
-        playerWrapper.style.position = 'relative'; // Asegura posicionamiento para el overlay
+        playerWrapper.style.position = 'relative';
         playerWrapper.appendChild(errorOverlay);
 
+        function setCenterSpinnerVisible(show) {
+            if (!centerLoadingSpinner) return;
+            if (show && !isFatalErrorShown) {
+                centerLoadingSpinner.classList.add('visible');
+            } else {
+                centerLoadingSpinner.classList.remove('visible');
+            }
+        }
+
         function mostrarErrorServidor() {
+            isFatalErrorShown = true;
+            isStreamWaiting = false;
+            setCenterSpinnerVisible(false);
             errorOverlay.style.opacity = '1';
             errorOverlay.style.zIndex = '10';
             errorOverlay.style.pointerEvents = 'auto';
+            if (reloadBtn) reloadBtn.style.display = 'flex';
+            if (currentChannel) {
+                setChannelOfflineState(currentChannel, true);
+            }
         }
 
         function ocultarErrorServidor() {
+            isFatalErrorShown = false;
             errorOverlay.style.opacity = '0';
             errorOverlay.style.pointerEvents = 'none';
         }
 
-        //FUNCIONAMIENTO
+        // ACTUALIZA EL BADGE DE UN CANAL (EN VIVO <-> OFFLINE MORADO)
+        function setChannelOfflineState(channel, isOffline) {
+            if (channel.targetBlank) return;
+            channel.isOffline = isOffline;
+            if (currentChannel && currentChannel.url === channel.url && playerStatusBadge) {
+                if (isOffline) {
+                    playerStatusBadge.classList.add('offline');
+                    playerStatusBadge.innerHTML = `<span class="live-dot"></span> OFFLINE`;
+                } else {
+                    playerStatusBadge.classList.remove('offline');
+                    playerStatusBadge.innerHTML = `<span class="live-dot"></span> EN VIVO`;
+                }
+            }
+            renderChannels(searchBox.value);
+        }
+
+        // ESCANEO AUTOMÁTICO DE TODOS LOS .M3U8 AL ABRIR LA PÁGINA
+        async function verifySingleM3u8(channel) {
+            if (channel.targetBlank) return;
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 9000);
+
+            try {
+                const response = await fetch(channel.url.trim(), {
+                    method: 'GET',
+                    signal: controller.signal,
+                    cache: 'no-store'
+                });
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    setChannelOfflineState(channel, true);
+                    return;
+                }
+
+                const manifestText = await response.text();
+                if (!manifestText || !manifestText.includes('#EXTM3U')) {
+                    setChannelOfflineState(channel, true);
+                    return;
+                }
+
+                channel.hasSubtitlesInManifest = /#EXT-X-MEDIA:[^\n]*TYPE=SUBTITLES/i.test(manifestText);
+                setChannelOfflineState(channel, false);
+            } catch (err) {
+                clearTimeout(timeoutId);
+                setChannelOfflineState(channel, true);
+            }
+        }
+
+        function checkAllChannelsStatus() {
+            channels.forEach((channel) => {
+                if (channel.targetBlank) return;
+                verifySingleM3u8(channel);
+            });
+        }
+
+        // RENDERIZADO DE LA LISTA LATERAL
         function renderChannels(filter = "") {
             channelListContainer.innerHTML = "";
             const filtered = channels.filter(c => c.name.toLowerCase().includes(filter.toLowerCase()));
@@ -1025,20 +1259,39 @@
             filtered.forEach((channel) => {
                 const item = document.createElement('div');
                 const isActive = currentChannel && currentChannel.url === channel.url;
+                const isTargetBlank = Boolean(channel.targetBlank);
+                const isOffline = !isTargetBlank && Boolean(channel.isOffline);
+
+                let badgeClass = '';
+                let badgeText = 'EN VIVO';
+
+                if (isTargetBlank) {
+                    badgeClass = 'open-tab';
+                    badgeText = 'OPEN IN TAB';
+                } else if (isOffline) {
+                    badgeClass = 'offline';
+                    badgeText = 'OFFLINE';
+                }
+
                 item.className = `channel-item ${isActive ? 'active' : ''}`;
                 item.innerHTML = `
-                <img class="channel-logo" src="${channel.logo}" alt="${channel.name}" />
-                <div class="channel-details">
-                    <span class="channel-title">${channel.name}</span>
-                    <span class="channel-badge"><span class="live-dot"></span> EN VIVO</span>
-                </div>
-            `;
+                    <img class="channel-logo" src="${channel.logo}" alt="${channel.name}" />
+                    <div class="channel-details">
+                        <span class="channel-title">${channel.name}
+                            ${isTargetBlank ? `
+                                <i class="fa-solid fa-arrow-up-right-from-square channel-external-icon"></i>
+                            ` : ''}
+                        </span>
+                        <span class="channel-badge ${badgeClass}">
+                            <span class="live-dot"></span> ${badgeText}
+                        </span>
+                    </div>
+                `;
 
                 item.addEventListener('click', () => {
-                    // Si el canal tiene la propiedad targetBlank en true, abre la URL en otra pestaña
-                    if (channel.targetBlank) {
+                    if (isTargetBlank) {
                         window.open(channel.url, '_blank', 'noopener,noreferrer');
-                        return; // Evita que intente cargarlo en el reproductor de video interno
+                        return;
                     }
                     loadChannel(channel);
                     document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
@@ -1067,14 +1320,12 @@
             sidebar.classList.toggle('mobile-open');
             if (overlay) overlay.classList.toggle('show');
 
-            // Cambia el icono con una transición más limpia
             if (sidebar.classList.contains('mobile-open')) {
                 mobileMenuBtn.innerHTML = `<svg viewBox="0 0 24 24" style="opacity: 0; transform: scale(0.7);"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" /></svg>`;
             } else {
                 mobileMenuBtn.innerHTML = `<svg viewBox="0 0 24 24" style="opacity: 0; transform: scale(0.7);"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" /></svg>`;
             }
 
-            // Fuerza la animación de entrada al siguiente ciclo de renderizado
             requestAnimationFrame(() => {
                 const svgInside = mobileMenuBtn.querySelector('svg');
                 if (svgInside) {
@@ -1088,6 +1339,119 @@
             closeMobileSidebar();
         });
 
+        // CONFIGURACIÓN DE SUBTÍTULOS (SOLO SI EL M3U8 PRINCIPAL TIENE SUBTÍTULOS)
+        function setupSubtitleMenu() {
+            subtitlePopupMenu.innerHTML = "";
+            subtitleBtn.classList.remove('cc-active');
+
+            const hlsTracks = (hls && Array.isArray(hls.subtitleTracks)) ? hls.subtitleTracks : [];
+            const nativeTextTracks = Array.from(video.textTracks || []).filter(t => t.kind === 'subtitles' || t.kind === 'captions');
+
+            if (hlsTracks.length === 0 && nativeTextTracks.length === 0) {
+                subtitleMenuContainer.style.display = 'none';
+                subtitlePopupMenu.classList.remove('show');
+                return;
+            }
+
+            subtitleMenuContainer.style.display = 'block';
+
+            const header = document.createElement('div');
+            header.className = 'popup-menu-header';
+            header.textContent = 'Subtítulos';
+            subtitlePopupMenu.appendChild(header);
+
+            const optionElements = [];
+
+            const offOption = document.createElement('div');
+            const isCurrentlyOff = hlsTracks.length > 0
+                ? hls.subtitleTrack === -1
+                : nativeTextTracks.every(t => t.mode !== 'showing');
+
+            offOption.className = `quality-option ${isCurrentlyOff ? 'selected' : ''}`;
+            offOption.innerHTML = `
+                <span class="quality-check">✓</span>
+                <div class="quality-title-group">
+                    <span>Desactivados</span>
+                </div>
+            `;
+            offOption.addEventListener('click', () => {
+                if (hls && hlsTracks.length > 0) {
+                    hls.subtitleTrack = -1;
+                    hls.subtitleDisplay = false;
+                }
+                nativeTextTracks.forEach(t => { t.mode = 'disabled'; });
+                optionElements.forEach(el => el.classList.remove('selected'));
+                offOption.classList.add('selected');
+                subtitleBtn.classList.remove('cc-active');
+                subtitlePopupMenu.classList.remove('show');
+            });
+            subtitlePopupMenu.appendChild(offOption);
+            optionElements.push(offOption);
+
+            if (hlsTracks.length > 0) {
+                hlsTracks.forEach((track, idx) => {
+                    const option = document.createElement('div');
+                    const isSelected = hls.subtitleTrack === idx;
+                    if (isSelected) subtitleBtn.classList.add('cc-active');
+
+                    const label = track.name || track.lang || `Subtítulo ${idx + 1}`;
+                    const langTag = track.lang ? track.lang.toUpperCase() : '';
+
+                    option.className = `quality-option ${isSelected ? 'selected' : ''}`;
+                    option.innerHTML = `
+                        <span class="quality-check">✓</span>
+                        <div class="quality-title-group">
+                            <span>${label}</span>
+                        </div>
+                        ${langTag ? `<span class="quality-details-text">${langTag}</span>` : ''}
+                    `;
+
+                    option.addEventListener('click', () => {
+                        hls.subtitleTrack = idx;
+                        hls.subtitleDisplay = true;
+                        optionElements.forEach(el => el.classList.remove('selected'));
+                        option.classList.add('selected');
+                        subtitleBtn.classList.add('cc-active');
+                        subtitlePopupMenu.classList.remove('show');
+                    });
+
+                    subtitlePopupMenu.appendChild(option);
+                    optionElements.push(option);
+                });
+            } else {
+                nativeTextTracks.forEach((track, idx) => {
+                    const option = document.createElement('div');
+                    const isSelected = track.mode === 'showing';
+                    if (isSelected) subtitleBtn.classList.add('cc-active');
+
+                    const label = track.label || track.language || `Subtítulo ${idx + 1}`;
+                    const langTag = track.language ? track.language.toUpperCase() : '';
+
+                    option.className = `quality-option ${isSelected ? 'selected' : ''}`;
+                    option.innerHTML = `
+                        <span class="quality-check">✓</span>
+                        <div class="quality-title-group">
+                            <span>${label}</span>
+                        </div>
+                        ${langTag ? `<span class="quality-details-text">${langTag}</span>` : ''}
+                    `;
+
+                    option.addEventListener('click', () => {
+                        nativeTextTracks.forEach((t, i) => {
+                            t.mode = (i === idx) ? 'showing' : 'disabled';
+                        });
+                        optionElements.forEach(el => el.classList.remove('selected'));
+                        option.classList.add('selected');
+                        subtitleBtn.classList.add('cc-active');
+                        subtitlePopupMenu.classList.remove('show');
+                    });
+
+                    subtitlePopupMenu.appendChild(option);
+                    optionElements.push(option);
+                });
+            }
+        }
+
         function loadChannel(channel) {
             if (!channel || !channel.url) {
                 console.error("Canal sin URL válida:", channel);
@@ -1097,13 +1461,27 @@
 
             currentChannel = channel;
             qualityPopupMenu.classList.remove('show');
-            playerChannelLogo.src = channel.logo || defaultLogo;
+            subtitlePopupMenu.classList.remove('show');
+            subtitleMenuContainer.style.display = 'none';
+            reloadBtn.style.display = 'none';
+            lowBufferCount = 0;
+            isStreamWaiting = true;
+
+            playerChannelLogo.src = channel.logo || "";
             playerChannelName.textContent = channel.name || "Canal";
 
+            if (channel.isOffline) {
+                playerStatusBadge.classList.add('offline');
+                playerStatusBadge.innerHTML = `<span class="live-dot"></span> OFFLINE`;
+            } else {
+                playerStatusBadge.classList.remove('offline');
+                playerStatusBadge.innerHTML = `<span class="live-dot"></span> EN VIVO`;
+            }
+
             ocultarErrorServidor();
+            setCenterSpinnerVisible(true);
             if (channelLoadTimeout) clearTimeout(channelLoadTimeout);
 
-            // Detener y limpiar la reproducción anterior antes de cargar otro canal.
             if (hls) {
                 hls.destroy();
                 hls = null;
@@ -1112,10 +1490,12 @@
             video.removeAttribute('src');
             video.load();
 
-            // Quitar manejadores anteriores para no acumular eventos al cambiar de canal.
             video.onplaying = null;
             video.onerror = null;
             video.onloadedmetadata = null;
+            video.onwaiting = null;
+            video.onstalled = null;
+            video.oncanplay = null;
 
             channelLoadTimeout = setTimeout(() => {
                 if (video.paused || video.readyState < 2) {
@@ -1125,11 +1505,32 @@
             }, 12000);
 
             video.onplaying = () => {
+                isStreamWaiting = false;
                 ocultarErrorServidor();
+                setCenterSpinnerVisible(false);
+                setChannelOfflineState(channel, false);
                 if (channelLoadTimeout) {
                     clearTimeout(channelLoadTimeout);
                     channelLoadTimeout = null;
                 }
+            };
+
+            video.oncanplay = () => {
+                if (!video.paused && video.readyState >= 3) {
+                    isStreamWaiting = false;
+                    setCenterSpinnerVisible(false);
+                }
+            };
+
+            video.onwaiting = () => {
+                isStreamWaiting = true;
+                reloadBtn.style.display = 'flex';
+                setCenterSpinnerVisible(true);
+            };
+            video.onstalled = () => {
+                isStreamWaiting = true;
+                reloadBtn.style.display = 'flex';
+                setCenterSpinnerVisible(true);
             };
 
             video.onerror = () => {
@@ -1137,7 +1538,6 @@
                 mostrarErrorServidor();
             };
 
-            // HLS en Chrome, Edge y otros navegadores con Media Source Extensions.
             if (typeof Hls !== "undefined" && Hls.isSupported()) {
                 hls = new Hls({
                     maxBufferLength: 10,
@@ -1156,9 +1556,14 @@
 
                 hls.on(Hls.Events.ERROR, (event, data) => {
                     console.error("Error HLS:", data.type, data.details, data);
+                    if (data.type === Hls.ErrorTypes.NETWORK_ERROR || data.details === Hls.ErrorDetails.BUFFER_STALLED_ERROR) {
+                        isStreamWaiting = true;
+                        reloadBtn.style.display = 'flex';
+                        setCenterSpinnerVisible(true);
+                    }
+
                     if (!data.fatal) return;
 
-                    // No volver a llamar loadChannel() recursivamente: puede crear un bucle.
                     if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
                         hls.startLoad();
                     } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
@@ -1173,13 +1578,20 @@
                 });
 
                 hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    setChannelOfflineState(channel, false);
                     setupQualityMenu();
+                    setupSubtitleMenu();
                     video.play().then(() => {
                         updatePlayState(true);
                     }).catch((err) => {
                         console.warn("El navegador requiere que pulses reproducir:", err);
+                        setCenterSpinnerVisible(false);
                         updatePlayState(false);
                     });
+                });
+
+                hls.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, () => {
+                    setupSubtitleMenu();
                 });
 
                 hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
@@ -1196,14 +1608,16 @@
                 hls.loadSource(channel.url.trim());
                 hls.attachMedia(video);
 
-            // HLS nativo (por ejemplo Safari), si el navegador lo admite.
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                 video.src = channel.url.trim();
                 video.onloadedmetadata = () => {
+                    setChannelOfflineState(channel, false);
+                    setupSubtitleMenu();
                     video.play().then(() => {
                         updatePlayState(true);
                     }).catch((err) => {
                         console.warn("El navegador requiere que pulses reproducir:", err);
+                        setCenterSpinnerVisible(false);
                         updatePlayState(false);
                     });
                 };
@@ -1219,30 +1633,31 @@
             }
         }
 
+        // ACCIÓN DEL BOTÓN RECARGAR (ESTILO YOUTUBE)
+        reloadBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!currentChannel) return;
+
+            reloadBtn.classList.add('spinning');
+            setTimeout(() => {
+                reloadBtn.classList.remove('spinning');
+            }, 900);
+
+            loadChannel(currentChannel);
+        });
+
         function updatePlayState(isPlaying) {
             playIcon.style.display = isPlaying ? 'none' : 'block';
             stopIcon.style.display = isPlaying ? 'block' : 'none';
-        }
-
-        function formatLevelDetails(level) {
-            const bitrateStr = level.bitrate ? `(${(level.bitrate / 1000000).toFixed(2)} Mbps` : '';
-            const fpsStr = level.frameRate ? ` ${Math.round(level.frameRate)} fps)` : (bitrateStr ? ')' : '');
-            return `${bitrateStr}${fpsStr}`;
-        }
-
-        function updateAutoText(currentLevelIndex) {
-            const autoDetailsSpan = document.getElementById('autoQualityDetails');
-            if (!autoDetailsSpan || !hls || !hls.levels[currentLevelIndex]) return;
-            const lvl = hls.levels[currentLevelIndex];
-            const kbps = lvl.bitrate ? Math.round(lvl.bitrate / 1000) : 0;
-            autoDetailsSpan.textContent = `(${lvl.height}p ${kbps} Kbps)`;
+            if (!isPlaying) {
+                setCenterSpinnerVisible(false);
+            }
         }
 
         function setupQualityMenu() {
             qualityPopupMenu.innerHTML = "";
             if (!hls || !hls.levels || hls.levels.length === 0) return;
 
-            // Función interna para calcular el texto actual del modo automática
             const getAutoDetailsText = () => {
                 const activeLevelIndex = hls.autoLevelEnabled ? (hls.currentLevel !== -1 ? hls.currentLevel : hls.loadLevel) : hls.loadLevel;
                 if (activeLevelIndex !== -1 && hls.levels[activeLevelIndex]) {
@@ -1257,26 +1672,21 @@
 
             const optionElements = [];
 
-            // --- OPCIÓN AUTOMÁTICA ---
-            // SPAN AUTO <span class="quality-badge" style="color: #e50914; background: rgba(229, 9, 20, 0.15); padding: 1px 5px; border-radius: 4px;">Auto</span>
             const autoOption = document.createElement('div');
             autoOption.className = `quality-option ${hls.autoLevelEnabled ? 'selected' : ''}`;
             autoOption.innerHTML = `
-        <span class="quality-check">✓</span>
-        <div class="quality-title-group">
-            <span>Automática</span>
-        </div>
-        <span class="quality-details-text" id="autoDetailsText">${getAutoDetailsText()}</span>
-    `;
+                <span class="quality-check">✓</span>
+                <div class="quality-title-group">
+                    <span>Automática</span>
+                </div>
+                <span class="quality-details-text" id="autoDetailsText">${getAutoDetailsText()}</span>
+            `;
 
             autoOption.addEventListener('click', () => {
-                hls.currentLevel = -1; // Activa el modo automáticA en HLS.js
-
-                // Cambio visual instantáneo (fondo y check)
+                hls.currentLevel = -1;
                 optionElements.forEach(el => el.classList.remove('selected'));
                 autoOption.classList.add('selected');
 
-                // Actualización inmediata del texto dinámico al hacer clic
                 const autoDetails = document.getElementById('autoDetailsText');
                 if (autoDetails) {
                     autoDetails.innerText = getAutoDetailsText();
@@ -1286,7 +1696,6 @@
             qualityPopupMenu.appendChild(autoOption);
             optionElements.push(autoOption);
 
-            // --- LISTA DE CALIDADES ORDENADAS ---
             const sortedLevels = [...hls.levels].map((level, originalIndex) => ({ level, originalIndex }));
 
             sortedLevels.sort((a, b) => {
@@ -1312,18 +1721,16 @@
                 option.className = `quality-option ${isSelected ? 'selected' : ''}`;
 
                 option.innerHTML = `
-            <span class="quality-check">✓</span>
-            <div class="quality-title-group">
-                <span>${height}p</span>
-                ${resolutionBadge}
-            </div>
-            <span class="quality-details-text">${mbps} Mbps</span>
-        `;
+                    <span class="quality-check">✓</span>
+                    <div class="quality-title-group">
+                        <span>${height}p</span>
+                        ${resolutionBadge}
+                    </div>
+                    <span class="quality-details-text">${mbps} Mbps</span>
+                `;
 
                 option.addEventListener('click', () => {
-                    hls.currentLevel = originalIndex; // Fija la calidad manual
-
-                    // Cambio visual instantáneo (fondo y check)
+                    hls.currentLevel = originalIndex;
                     optionElements.forEach(el => el.classList.remove('selected'));
                     option.classList.add('selected');
                 });
@@ -1333,26 +1740,14 @@
             });
         }
 
-        function updateQualityUI(selectedIndex) {
-            const options = qualityPopupMenu.querySelectorAll('.quality-option');
-            options.forEach((opt) => {
-                const idx = parseInt(opt.dataset.index);
-                opt.classList.toggle('selected', idx === selectedIndex);
-            });
-            qualityPopupMenu.classList.remove('show');
-        }
-
-        function updateQualityMenuSelection() {
-            // Vuelve a generar todo el menú para reflejar el estado actual de hls.currentLevel y hls.autoLevelEnabled
-            setupQualityMenu();
-        }
-
         playStopBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             if (video.paused) {
-                if (hls) {
-                    video.currentTime = hls.liveSyncPosition ?? video.duration;
+                if (hls && hls.liveSyncPosition) {
+                    video.currentTime = hls.liveSyncPosition;
                 }
+                isStreamWaiting = true;
+                setCenterSpinnerVisible(true);
                 video.play().then(() => {
                     updatePlayState(true);
                 }).catch(err => {
@@ -1389,8 +1784,6 @@
                 volumeMuteIcon.style.display = 'none';
             }
         });
-        const volumeSliderContainer = document.querySelector('.volume-slider-container');
-        let lastVolume = 1;
 
         function updateSliderBackground(val) {
             const percentage = val * 100;
@@ -1415,14 +1808,25 @@
         updateSliderBackground(volumeSlider.value);
         updateVolumeSliderBackground(volumeSlider.value);
 
+        // EVENTOS DE POPUP DE SUBTÍTULOS Y CALIDAD
+        subtitleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            qualityPopupMenu.classList.remove('show');
+            subtitlePopupMenu.classList.toggle('show');
+        });
+
         qualityBtn.addEventListener('click', (e) => {
             e.stopPropagation();
+            subtitlePopupMenu.classList.remove('show');
             qualityPopupMenu.classList.toggle('show');
         });
 
         document.addEventListener('click', (e) => {
-            if (!qualityBtn.contains(e.target)) {
+            if (!qualityBtn.contains(e.target) && !qualityPopupMenu.contains(e.target)) {
                 qualityPopupMenu.classList.remove('show');
+            }
+            if (!subtitleBtn.contains(e.target) && !subtitlePopupMenu.contains(e.target)) {
+                subtitlePopupMenu.classList.remove('show');
             }
         });
 
@@ -1452,7 +1856,6 @@
             }
         });
 
-        // Función para forzar la rotación horizontal en móviles
         function lockMobileLandscape() {
             if (isMobileDevice() && screen.orientation && screen.orientation.lock) {
                 screen.orientation.lock('landscape').catch((err) => {
@@ -1461,7 +1864,6 @@
             }
         }
 
-        // Función para liberar la orientación al salir
         function exitMobileLandscape() {
             if (screen.orientation && screen.orientation.unlock) {
                 try {
@@ -1482,7 +1884,7 @@
             } else {
                 mainContent.classList.remove('mobile-landscape-fullscreen');
                 playerWrapper.classList.remove('in-fullscreen');
-                exitMobileLandscape(); // Asegura liberar el giro si se sale por gestos del sistema
+                exitMobileLandscape();
             }
         }
 
@@ -1492,15 +1894,12 @@
         video.addEventListener('click', () => {
             if (!isMobileDevice()) return;
 
-            // Muestra los controles agregando la clase temporal
             playerWrapper.classList.add('mobile-show-controls');
 
-            // Limpia el temporizador anterior si vuelve a tocar antes de los 3s
             if (mobileControlsTimeout) {
                 clearTimeout(mobileControlsTimeout);
             }
 
-            // Oculta los controles después de 3 segundos (3000 ms)
             mobileControlsTimeout = setTimeout(() => {
                 playerWrapper.classList.remove('mobile-show-controls');
             }, 3000);
@@ -1508,7 +1907,6 @@
 
         searchBox.addEventListener('input', (e) => renderChannels(e.target.value));
 
-        // CONTROL DE VISIBILIDAD (PANTALLA COMPLETA O NORMAL CON MOUSEMOVE)
         function showControlsTemporarily() {
             playerWrapper.classList.remove('hide-controls');
             playerWrapper.classList.remove('normal-autohide');
@@ -1522,6 +1920,7 @@
                         playerWrapper.classList.add('normal-autohide');
                     }
                     if (qualityPopupMenu) qualityPopupMenu.classList.remove('show');
+                    if (subtitlePopupMenu) subtitlePopupMenu.classList.remove('show');
                 }
             }, TIEMPO_OCULTAR_CONTROLES);
         }
@@ -1532,7 +1931,7 @@
 
         function handleFullscreenTouch(e) {
             if (!document.fullscreenElement) return;
-            if (e.target.closest('.quality-popup-menu, .sidebar, .mobile-menu-btn, .controls-overlay, .player-header')) return;
+            if (e.target.closest('.quality-popup-menu, .subtitle-popup-menu, .sidebar, .mobile-menu-btn, .controls-overlay, .player-header')) return;
 
             playerWrapper.classList.remove('hide-controls');
             showControlsTemporarily();
@@ -1552,14 +1951,37 @@
             }
         });
 
+        // MONITOR DE SALUD DEL BUFFER + SPINNER CENTRAL (< 1.2s) + BOTÓN RECARGAR
         setInterval(() => {
+            if (!currentChannel || isFatalErrorShown) return;
+
+            let duration = 0;
             if (video.buffered.length > 0) {
                 const bufferedEnd = video.buffered.end(video.buffered.length - 1);
-                const duration = bufferedEnd - video.currentTime;
-                bufferValue.textContent = `Buffer: ${duration.toFixed(1)}s`;
-                bufferDot.classList.toggle('low', duration < 2);
+                duration = Math.max(0, bufferedEnd - video.currentTime);
             }
-        }, 1000);
+
+            bufferValue.textContent = `Buffer: ${duration.toFixed(1)}s`;
+            const isLowBuffer = duration < 2.0;
+            const isVeryLowBuffer = duration < 1.2;
+            bufferDot.classList.toggle('low', isLowBuffer);
+
+            if (!video.paused && (isStreamWaiting || isVeryLowBuffer || video.readyState < 3)) {
+                setCenterSpinnerVisible(true);
+            } else if (!isStreamWaiting && duration >= 1.5 && video.readyState >= 3) {
+                setCenterSpinnerVisible(false);
+            }
+
+            if (isLowBuffer && !video.paused) {
+                lowBufferCount++;
+                if (lowBufferCount >= 2 || video.readyState < 3) {
+                    reloadBtn.style.display = 'flex';
+                }
+            } else if (duration >= 3.0 && video.readyState >= 3) {
+                lowBufferCount = 0;
+                reloadBtn.style.display = 'none';
+            }
+        }, 800);
 
         document.addEventListener('touchstart', function unmuter() {
             if (video.muted) {
@@ -1571,9 +1993,33 @@
             document.removeEventListener('touchstart', unmuter);
         }, { once: true });
 
+        // INICIALIZACIÓN AL ABRIR LA PÁGINA
         renderChannels();
+        checkAllChannelsStatus();
         if (channels.length > 0 && !channels[0].targetBlank) loadChannel(channels[0]);
 
+        // CONTROL DE CANALES CON EL CONTROL REMOTO DE LA TV
+        document.addEventListener('keydown', (e) => {
+            if (document.activeElement === searchBox) return;
+
+            const filteredChannels = channels.filter(c => !c.targetBlank);
+            if (filteredChannels.length === 0) return;
+
+            let currentIndex = filteredChannels.findIndex(c => currentChannel && c.url === currentChannel.url);
+            if (currentIndex === -1) currentIndex = 0;
+
+            if (e.code === 'ChannelDown' || e.key === 'ChannelDown' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                currentIndex = (currentIndex + 1) % filteredChannels.length;
+                loadChannel(filteredChannels[currentIndex]);
+                renderChannels(searchBox.value);
+            } else if (e.code === 'ChannelUp' || e.key === 'ChannelUp' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                currentIndex = (currentIndex - 1 + filteredChannels.length) % filteredChannels.length;
+                loadChannel(filteredChannels[currentIndex]);
+                renderChannels(searchBox.value);
+            }
+        });
     </script>
 </body>
 

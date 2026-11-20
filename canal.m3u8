@@ -1,5 +1,6 @@
 #EXTM3U @LaQuay https://github.com/LaQuay/TDTChannels
 #EXTM3U url-tvg="https://www.tdtchannels.com/epg/TV.xml.gz"
+
 #EXTINF:-1 tvg-id="La1.TV" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKAkEfk96B4C3wdml0A6_Ewv8zhsVAj2AVDSLpS34DMw&s" group-title="Generalistas" tvg-name="La 1",La 1 [ES][720]
 https://rtvelivestream.rtve.es/rtvesec/la1/la1_main_dvr.m3u8
 
@@ -15,6 +16,15 @@ https://stream.ads.ottera.tv/playlist.m3u8?network_id=15618
 #EXTINF:-1 tvg-id="ElPais.TV" tvg-logo="https://graph.facebook.com/elpais/picture?width=200&height=200" group-title="Informativos" tvg-name="El País",El País [ES][1080]
 https://d2epgk1fomaa1g.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-9n8y4tw0bk3an/live/fast-channel-el-pais/fast-channel-el-pais.m3u8
 
+
+
+
+#EXTINF:-1 tvg-id="DW.TV" tvg-logo="https://graph.facebook.com/dw.espanol/picture?width=200&height=200" group-title="Int. Europa" tvg-name="DW Alemania",DW Alemania [ES][1080]
+https://dwamdstream104.akamaized.net/hls/live/2015530/dwstream104/index.m3u8
+
+#EXTINF:-1 tvg-id="TVE_INTER.TV" tvg-logo="https://graph.facebook.com/tveInternacional/picture?width=200&height=200" group-title="Int. Europa" tvg-name="TVE Int. América",TVE Int. América [ES][720]
+https://rtvelivestream.rtve.es/rtvesec/int/tvei_ame_main_dvr.m3u8
+
 #EXTINF:-1 tvg-id="Euronews.TV" tvg-logo="https://graph.facebook.com/es.euronews/picture?width=200&height=200" group-title="Informativos" tvg-name="Euronews",Euronews [ES][720]
 https://cdn-euronews.akamaized.net/live/eds/euronews-es/25053/index.m3u8
 
@@ -27,20 +37,23 @@ https://ds2c506obo7m8.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a
 #EXTINF:-1 tvg-id="CNNInt.TV" tvg-logo="https://jiotvimages.cdn.jio.com/dare_images/images/CNN.png" group-title="Int. Europa" tvg-name="CNN USA",CNN [EN][1080]
 https://amg01918-cnnus-amg01918c2-vizio-us-9192.playouts.now.amagi.tv/playlist/amg01918-cnnus-cnnoriginals-vizious/playlist.m3u8
 
-#EXTINF:-1 tvg-id="CNNInt.TV" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Logo_de_CNN_en_Espa%C3%B1ol_%282010-2015%29.svg/960px-Logo_de_CNN_en_Espa%C3%B1ol_%282010-2015%29.svg.png" group-title="Int. Europa" tvg-name="CNN Español",CNN en Español [ES][720]
+#EXTINF:-1 tvg-id="CNNInt.TV" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Logo_de_CNN_en_Espa%C3%B1ol_%282010-2015%29.svg/960px-Logo_de_CNN_en_Espa%C3%B1ol_%282010-2015%29.svg.png" group-title="Int. Europa" tvg-name="CNN Español",CNN en Español [LA][720]
 https://streaming.onnethn.com/CNN_ESPANOL/playlist.m3u8
 
-#EXTINF:-1 tvg-id="DW.TV" tvg-logo="https://graph.facebook.com/dw.espanol/picture?width=200&height=200" group-title="Int. Europa" tvg-name="DW Alemania",DW Alemania [ES][1080]
-https://dwamdstream104.akamaized.net/hls/live/2015530/dwstream104/index.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/a/a0/Russia-today-logo.svg" group-title="Int. América" tvg-name="RT",RT [EN][1080]
+https://wisewatchoott.wiseplayout.com/RT/master.m3u8
 
-#EXTINF:-1 tvg-id="TVE_INTER.TV" tvg-logo="https://graph.facebook.com/tveInternacional/picture?width=200&height=200" group-title="Int. Europa" tvg-name="TVE Int. América",TVE Int. América [ES][720]
-https://rtvelivestream.rtve.es/rtvesec/int/tvei_ame_main_dvr.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/a/a0/Russia-today-logo.svg" group-title="Int. América" tvg-name="RT Español",RT [ES][1080]
+https://rt-esp.rttv.com/dvr/rtesp/playlist.m3u8
 
 #EXTINF:-1 tvg-id="ADN40.TV" tvg-logo="https://pbs.twimg.com/profile_images/1968512728059850752/KUWD445m_200x200.jpg" group-title="Int. América" tvg-name="ADN Noticias Mexico",ADN Noticias [MX][720]
 https://mdstrm.com/live-stream-playlist/60b578b060947317de7b57ac.m3u8
 
 #EXTINF:-1 tvg-id="TeleSUR.TV" tvg-logo="https://graph.facebook.com/teleSUR/picture?width=200&height=200" group-title="Int. América" tvg-name="TeleSUR Venezuela",TeleSUR [VE][1080]
 https://mblesmain01.telesur.ultrabase.net/mbliveMain/hd/playlist.m3u8
+
+#EXTINF:-1 tvg-logo="https://thumb.wikimedia.org/wikipedia/commons/thumb/2/23/Am%C3%A9rica_Televisi%C3%B3n_Internacional_2022.png/960px-Am%C3%A9rica_Televisi%C3%B3n_Internacional_2022.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=thumbnail" group-title="Int. América" tvg-name="America Internacional Perú",America Internacional [PE][720]
+https://api-ott.americatv.com.pe/loggingmediaurlpassthrough/a.m3u8?version=12&id=10&partner=whaletv&tag_id=139913&app_name=Whale+TV%2B&app_store=Browser&ic=IAB1&url=&wtv_channel_id=0470&content_id=&content_genre=News&content_title=&content_series=&content_season=&content_episode=&language=&dur=&rating=12%2B&content_producer_name=OTTera_AmericaTV_AmericaTelevision&content_categories=IAB19-29%2CIAB12&content_custom_1_param=OTTera&content_custom_2_param=F%2CM&content_custom_3_param=18-20%2C21-24%2C25-29%2C30-34%2C35-39%2C40-44%2C45-49%2C50-54%2C55-59&tv_language=&device_make=&tv_vendor=&brand_name=&device_model=&tv_model=&gdpr=1&gdpr_consent=&did=&ua=&ip=&dnt=&lmt=&coppa=0&us_privacy=1YNN&min_dur=5&max_dur=30&cb=&h=&w=&content_livestream=1&placement=1&ap=1&mute=0&skip=0&ads.gdpr
 
 #EXTINF:-1 tvg-logo="https://graph.facebook.com/Latina.pe/picture?width=200&height=200" group-title="Int. América" tvg-name="Latina Perú",Latina Noticias [PE][1080]
 https://redirector.rudo.video/hls-video/567ffde3fa319fadf3419efda25619456231dfea/latinanoticias/latinanoticias.smil/playlist.m3u8
@@ -50,12 +63,6 @@ https://luna-4-video.mediaserver.digital/exitosatv_233b-4b49-a726-5a451262/index
 
 #EXTINF:-1 tvg-logo="https://graph.facebook.com/news24ukraine/picture?width=200&height=200" group-title="Int. Europa" tvg-name="Channel 24 Ucrania",Channel 24 Ucrania [UK][1080]
 https://streamvideol1.luxnet.ua/news24/news24.stream/playlist.m3u8
-
-#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/a/a0/Russia-today-logo.svg" group-title="Int. América" tvg-name="RT",RT [EN][1080]
-https://wisewatchoott.wiseplayout.com/RT/master.m3u8
-
-#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/a/a0/Russia-today-logo.svg" group-title="Int. América" tvg-name="RT Español",RT [ES][1080]
-https://rt-esp.rttv.com/dvr/rtesp/playlist.m3u8
 
 #EXTINF:-1 tvg-logo="https://logos-world.net/wp-content/uploads/2025/01/Russia-1-Logo.png" group-title="Int. América" tvg-name="Россия 1",Russia-1 [RUS][1080]
 https://stream.smotrim.ru/hls2/russia_hd/playlist_6.m3u8
@@ -78,11 +85,19 @@ https://d2jiqiw4g5lj5k.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68
 #EXTINF:-1 tvg-logo="https://graph.facebook.com/newsmax/picture?width=200&height=200" group-title="Int. América" tvg-name="Newsmax TV USA",Newsmax [EN][1080]
 https://nmxlive.akamaized.net/hls/live/529965/Live_1/index.m3u8
 
+
+
+
+
 #EXTINF:-1 tvg-id="RMTV.TV" tvg-logo="https://graph.facebook.com/RealMadrid/picture?width=200&height=200" group-title="Deportivos" tvg-name="Real Madrid TV",Real Madrid TV [ES][720]
 https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8
 
 #EXTINF:-1 tvg-id="RMTV.TV" tvg-logo="https://graph.facebook.com/RealMadrid/picture?width=200&height=200" group-title="Deportivos" tvg-name="Real Madrid TV",Real Madrid TV [EN] [720]
 https://rmtv.akamaized.net/hls/live/2043154/rmtv-en-web/master.m3u8
+
+
+
+
 
 #EXTINF:-1 tvg-logo="https://graph.facebook.com/Latina.pe/picture?width=200&height=200" group-title="Int. América" tvg-name="Latina Perú",Latina [PE][1080]
 https://redirector.rudo.video/hls-video/567ffde3fa319fadf3419efda25619456231dfea/latina/latina.smil/playlist.m3u8
@@ -90,13 +105,20 @@ https://redirector.rudo.video/hls-video/567ffde3fa319fadf3419efda25619456231dfea
 #EXTINF:-1 tvg-logo="https://graph.facebook.com/Latina.pe/picture?width=200&height=200" group-title="Int. América" tvg-name="Latina Perú",Latina Clasicos [PE][1080]
 https://redirector.rudo.video/hls-video/plus226/latina2/latina2.smil/playlist.m3u8
 
+#EXTINF:-1 tvg-logo="https://logos-world.net/wp-content/uploads/2023/07/History-Logo.png" group-title="Int. América" tvg-name="History Latam",History Latam [ES][1080]
+https://d1k3vzh2ivy22k.cloudfront.net/Historia.m3u8
+
+
+
+
+
 #EXTINF:-1 tvg-logo="https://graph.facebook.com/mariavision/picture?width=200&height=200" group-title="Religiosos" tvg-name="María Visión España y Mexico",María Visión [ES][1080]
 https://1601580044.rsc.cdn77.org/live/_jcn_/amls:Italiatre/playlist.m3u8
 
 #EXTINF:-1 tvg-logo="https://graph.facebook.com/mariavision/picture?width=200&height=200" group-title="Religiosos" tvg-name="María Visión España y Mexico",María Visión [MX][1080]
 https://1601580044.rsc.cdn77.org/live/_jcn_/amlst:Mariavision/master.m3u8
 
-#EXTINF:-1 tvg-id="EWTN.TV" tvg-logo="https://graph.facebook.com/ewtnespanol/picture?width=200&height=200" group-title="Religiosos" tvg-name="EWTN",EWTN [ES][720]
+#EXTINF:-1 tvg-id="EWTN.TV" tvg-logo="https://graph.facebook.com/ewtnespanol/picture?width=200&height=200" group-title="Religiosos" tvg-name="EWTN",EWTN [LA][720]
 https://cdn3.wowza.com/1/SmVrQmZCUXZhVDgz/b3J3MFJv/hls/live/playlist.m3u8
 
 #EXTINF:-1 tvg-id="EWTN.TV" tvg-logo="https://graph.facebook.com/ewtnespanol/picture?width=200&height=200" group-title="Religiosos" tvg-name="EWTN",EWTN [ES][1080]
