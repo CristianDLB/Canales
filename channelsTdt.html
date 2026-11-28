@@ -331,7 +331,12 @@
             display: block;
         }
 
-        /* SPINNER CENTRAL DE CARGANDO / BUFFER MUY BAJO */
+        video::cue {
+            background: rgba(0, 0, 0, 0.72);
+            color: #ffffff;
+        }
+
+        /* INDICADOR CENTRAL DE CARGANDO (SOLO CUANDO DEMORA EN CARGAR) */
         .center-loading-overlay {
             position: absolute;
             inset: 0;
@@ -339,7 +344,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 12px;
+            gap: 14px;
             background: rgba(0, 0, 0, 0.35);
             z-index: 15;
             opacity: 0;
@@ -353,34 +358,56 @@
             visibility: visible;
         }
 
-        .center-spinner {
+        .pulse-spinner {
+            position: relative;
             width: 56px;
             height: 56px;
-            border: 4px solid rgba(255, 255, 255, 0.18);
-            border-top-color: #0070f3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pulse-spinner::before,
+        .pulse-spinner::after {
+            content: "";
+            position: absolute;
+            inset: 0;
             border-radius: 50%;
-            animation: centerSpin 0.85s linear infinite;
-            box-shadow: 0 0 18px rgba(0, 112, 243, 0.35);
+            border: 3px solid transparent;
+        }
+
+        .pulse-spinner::before {
+            border-top-color: #00d2ff;
+            border-right-color: #0070f3;
+            animation: spinArcPrimary 0.9s cubic-bezier(0.5, 0.15, 0.5, 0.85) infinite;
+        }
+
+        .pulse-spinner::after {
+            inset: 8px;
+            border-bottom-color: #6fb1fc;
+            border-left-color: rgba(255, 255, 255, 0.45);
+            animation: spinArcSecondary 1.2s linear infinite reverse;
         }
 
         .center-loading-label {
-            font-size: 0.82rem;
+            font-size: 0.84rem;
             font-weight: 600;
-            color: rgba(255, 255, 255, 0.9);
-            background: rgba(15, 15, 17, 0.75);
-            padding: 5px 12px;
+            color: rgba(255, 255, 255, 0.95);
+            background: rgba(15, 15, 17, 0.82);
+            padding: 6px 14px;
             border-radius: 999px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.12);
             letter-spacing: 0.3px;
         }
 
-        @keyframes centerSpin {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg);
-            }
+        @keyframes spinArcPrimary {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes spinArcSecondary {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .player-header {
@@ -432,26 +459,73 @@
             padding: 14px 16px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
             opacity: 1;
             transition: opacity 0.3s ease;
             z-index: 20;
         }
 
+        /* BARRA AZUL ESTILO EN VIVO DE YOUTUBE CON BOLA GRANDE AL FINAL */
         .live-progress-bar {
             width: 100%;
             height: 4px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.22);
+            border-radius: 999px;
             position: relative;
-            overflow: hidden;
+            display: flex;
+            align-items: center;
+            cursor: default;
         }
 
         .live-progress-fill {
             width: 100%;
             height: 100%;
-            background: #0070f3 !important;
-            box-shadow: 0 0 8px #0070f3;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #0052d4 0%, #0070f3 60%, #2b95ff 100%) !important;
+            box-shadow: 0 0 10px rgba(0, 112, 243, 0.75);
+            position: relative;
+            transition: height 0.15s ease;
+        }
+
+        .live-progress-bar:hover .live-progress-fill {
+            height: 5px;
+        }
+
+        .live-progress-knob {
+            position: absolute;
+            right: -7px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #2b95ff;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 12px rgba(43, 149, 255, 0.95);
+            animation: liveKnobPulse 1.8s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .live-progress-bar.offline .live-progress-fill {
+            background: linear-gradient(90deg, #7e22ce 0%, #a855f7 100%) !important;
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.7);
+        }
+
+        .live-progress-bar.offline .live-progress-knob {
+            background: #c084fc;
+            box-shadow: 0 0 10px rgba(192, 132, 252, 0.8);
+            animation: none;
+        }
+
+        @keyframes liveKnobPulse {
+            0%, 100% {
+                transform: translateY(-50%) scale(1);
+                box-shadow: 0 0 10px rgba(43, 149, 255, 0.85);
+            }
+            50% {
+                transform: translateY(-50%) scale(1.18);
+                box-shadow: 0 0 16px rgba(43, 149, 255, 1);
+            }
         }
 
         .controls-bottom {
@@ -530,6 +604,18 @@
             border-radius: 4px;
             border: 1px solid rgba(0, 112, 243, 0.3);
             white-space: nowrap;
+            transition: color 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+        }
+
+        .live-indicator.offline {
+            color: #c084fc;
+            background: rgba(168, 85, 247, 0.16);
+            border-color: rgba(168, 85, 247, 0.35);
+        }
+
+        .live-indicator.offline .live-dot {
+            background-color: #a855f7;
+            box-shadow: 0 0 6px #a855f7;
         }
 
         .quality-menu-container,
@@ -650,7 +736,7 @@
             border-radius: 50%;
             background-color: #28a745;
             box-shadow: 0 0 6px #28a745;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         .buffer-dot.low {
@@ -930,22 +1016,24 @@
                 <div class="player-header">
                     <img src="" id="playerChannelLogo" class="player-channel-logo" alt="Logo Canal">
                     <div class="player-channel-info">
-                        <span class="player-channel-name" id="playerChannelName">Cargando canal...</span>
+                        <span class="player-channel-name" id="playerChannelName">Cargando...</span>
                         <span class="channel-badge" id="playerStatusBadge"><span class="live-dot"></span> EN VIVO</span>
                     </div>
                 </div>
 
-                <!-- SPINNER CENTRAL DE CARGANDO / BUFFER MUY BAJO -->
+                <!-- INDICADOR CENTRAL DE CARGA (SOLO SI DEMORA EN CARGAR) -->
                 <div class="center-loading-overlay" id="centerLoadingOverlay">
-                    <div class="center-spinner"></div>
-                    <span class="center-loading-label" id="centerLoadingLabel">Cargando flujo...</span>
+                    <div class="pulse-spinner"></div>
+                    <span class="center-loading-label" id="centerLoadingLabel">Cargando...</span>
                 </div>
 
                 <video id="videoPlayer" autoplay muted playsinline></video>
 
                 <div class="controls-overlay">
-                    <div class="live-progress-bar">
-                        <div class="live-progress-fill"></div>
+                    <div class="live-progress-bar" id="liveProgressBar">
+                        <div class="live-progress-fill">
+                            <span class="live-progress-knob"></span>
+                        </div>
                     </div>
 
                     <div class="controls-bottom">
@@ -959,7 +1047,7 @@
                                 </svg>
                             </button>
 
-                            <button class="btn-control" id="reloadBtn" title="Recargar transmisión (Conexión inestable)" style="display:none;">
+                            <button class="btn-control" id="reloadBtn" title="Recargar transmisión" style="display:none;">
                                 <svg viewBox="0 0 24 24">
                                     <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
                                 </svg>
@@ -983,15 +1071,15 @@
                                 </div>
                             </div>
 
-                            <div class="live-indicator">
-                                <span class="live-dot"></span> DIRECTO
+                            <div class="live-indicator" id="directIndicator">
+                                <span class="live-dot"></span> <span id="directIndicatorText">EN VIVO</span>
                             </div>
                         </div>
 
                         <div class="right-controls">
                             <div id="bufferHealth" class="buffer-health-tag">
                                 <span class="buffer-dot"></span>
-                                <span id="bufferValue">Buffer: 0.0s</span>
+                                <span id="bufferValue">0.0s</span>
                             </div>
 
                             <div class="subtitle-menu-container" id="subtitleMenuContainer" style="display:none;">
@@ -1030,6 +1118,7 @@
 
     <script>
         const defaultLogo = "https://i.imgur.com/8Qp87Gf.png";
+        const MIN_BUFFER_ONLINE = 5.0; // Mínimo de buffer en segundos para mantenerse EN VIVO
 
         // CANALES INTEGRADOS UNO POR UNO CONSERVANDO SU GRUPO
         const channels = [
@@ -1148,7 +1237,7 @@
             {
                 name: "America Internacional [PE][720]",
                 group: "Informativos",
-                logo: "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/23/Am%C3%A9rica_Televisi%C3%B3n_Internacional_2022.png/960px-Am%C3%A9rica_Televisi%C3%B3n_Internacional_2022.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+                logo: "https://m.media-amazon.com/images/I/51I-MqnIcLL.png",
                 url: "https://api-ott.americatv.com.pe/loggingmediaurlpassthrough/a.m3u8?version=12&id=10&partner=whaletv&tag_id=139913&app_name=Whale+TV%2B&app_store=Browser&ic=IAB1&url=&wtv_channel_id=0470&content_id=&content_genre=News&content_title=&content_series=&content_season=&content_episode=&language=&dur=&rating=12%2B&content_producer_name=OTTera_AmericaTV_AmericaTelevision&content_categories=IAB19-29%2CIAB12&content_custom_1_param=OTTera&content_custom_2_param=F%2CM&content_custom_3_param=18-20%2C21-24%2C25-29%2C30-34%2C35-39%2C40-44%2C45-49%2C50-54%2C55-59&tv_language=&device_make=&tv_vendor=&brand_name=&device_model=&tv_model=&gdpr=1&gdpr_consent=&did=&ua=&ip=&dnt=&lmt=&coppa=0&us_privacy=1YNN&min_dur=5&max_dur=30&cb=&h=&w=&content_livestream=1&placement=1&ap=1&mute=0&skip=0&ads.gdpr",
                 isOffline: false
             },
@@ -1190,14 +1279,14 @@
             {
                 name: "ABC News [EN][720]",
                 group: "Informativos",
-                logo: "https://logos-world.net/wp-content/uploads/2023/09/ABC-News-Logo.png",
+                logo: "https://images.seeklogo.com/logo-png/52/1/abc-news-logo-png_seeklogo-529416.png",
                 url: "https://aegis-cloudfront-1.tubi.video/d6cbb0de-68e4-4f3b-82f9-bf5d526e0bde/index.m3u8",
                 isOffline: false
             },
             {
                 name: "NBC News [EN][1080]",
                 group: "Informativos",
-                logo: "https://logos-world.net/wp-content/uploads/2024/01/NBC-News-Logo.png",
+                logo: "https://upload.wikimedia.org/wikipedia/commons/6/65/NBC_News_%282023%3B_App_Icon%29.svg",
                 url: "https://d1bl6tskrpq9ze.cloudfront.net/hls/master.m3u8?ads.xumo_channelId=99984003",
                 isOffline: false
             },
@@ -1253,7 +1342,7 @@
             {
                 name: "History Latam [ES][1080]",
                 group: "General",
-                logo: "https://logos-world.net/wp-content/uploads/2023/07/History-Logo.png",
+                logo: "https://upload.wikimedia.org/wikipedia/commons/f/fa/History_Logo_2008-2015.svg",
                 url: "https://d1k3vzh2ivy22k.cloudfront.net/Historia.m3u8",
                 isOffline: false
             },
@@ -1313,6 +1402,9 @@
         const playerChannelLogo = document.getElementById('playerChannelLogo');
         const playerChannelName = document.getElementById('playerChannelName');
         const playerStatusBadge = document.getElementById('playerStatusBadge');
+        const directIndicator = document.getElementById('directIndicator');
+        const directIndicatorText = document.getElementById('directIndicatorText');
+        const liveProgressBar = document.getElementById('liveProgressBar');
 
         const volumeBtn = document.getElementById('volumeBtn');
         const volumeSlider = document.getElementById('volumeSlider');
@@ -1342,9 +1434,10 @@
         let currentChannel = null;
         let controlsTimeout = null;
         let channelLoadTimeout = null;
+        let loadingDelayTimer = null;
         let statusScanTimer = null;
         let lowBufferCount = 0;
-        let isStreamBuffering = false;
+        let isStreamDelayed = false;
         let isFatalServerError = false;
 
         const TIEMPO_OCULTAR_CONTROLES = 2500;
@@ -1377,37 +1470,65 @@
         `;
         playerWrapper.appendChild(errorOverlay);
 
-        function setCenterSpinner(show, text = "Cargando flujo...") {
-            if (!centerLoadingOverlay) return;
-            if (show && !isFatalServerError) {
-                if (centerLoadingLabel) centerLoadingLabel.textContent = text;
+        // LIMPIA CUALQUIER RASTRO DE SUBTÍTULOS AL CAMBIAR O REINICIAR CANAL
+        function clearAllSubtitles() {
+            if (hls) {
+                try {
+                    hls.subtitleTrack = -1;
+                    hls.subtitleDisplay = false;
+                } catch (_) {}
+            }
+
+            if (video && video.textTracks) {
+                Array.from(video.textTracks).forEach(track => {
+                    track.mode = 'disabled';
+                });
+            }
+
+            // Elimina elementos <track> residuales si existieran
+            if (video) {
+                video.querySelectorAll('track').forEach(trackEl => trackEl.remove());
+            }
+
+            subtitleBtn.classList.remove('cc-active');
+            subtitlePopupMenu.innerHTML = '';
+            subtitlePopupMenu.classList.remove('show');
+            subtitleMenuContainer.style.display = 'none';
+        }
+
+        function showLoadingSpinner(immediate = false) {
+            if (!centerLoadingOverlay || isFatalServerError) return;
+            if (centerLoadingLabel) centerLoadingLabel.textContent = "Cargando...";
+
+            if (immediate) {
                 centerLoadingOverlay.classList.add('active');
-            } else {
+                return;
+            }
+
+            if (!loadingDelayTimer) {
+                loadingDelayTimer = setTimeout(() => {
+                    loadingDelayTimer = null;
+                    if (!isFatalServerError && (isStreamDelayed || video.readyState < 3)) {
+                        centerLoadingOverlay.classList.add('active');
+                    }
+                }, 550);
+            }
+        }
+
+        function hideLoadingSpinner() {
+            if (loadingDelayTimer) {
+                clearTimeout(loadingDelayTimer);
+                loadingDelayTimer = null;
+            }
+            if (centerLoadingOverlay) {
                 centerLoadingOverlay.classList.remove('active');
             }
         }
 
-        function mostrarErrorServidor() {
-            isFatalServerError = true;
-            isStreamBuffering = false;
-            setCenterSpinner(false);
-            errorOverlay.style.opacity = '1';
-            errorOverlay.style.zIndex = '10';
-            errorOverlay.style.pointerEvents = 'auto';
-            if (reloadBtn) reloadBtn.style.display = 'flex';
-            if (currentChannel) {
-                setChannelOfflineState(currentChannel, true);
-            }
-        }
-
-        function ocultarErrorServidor() {
-            isFatalServerError = false;
-            errorOverlay.style.opacity = '0';
-            errorOverlay.style.pointerEvents = 'none';
-        }
-
-        function updateSingleBadgeDom(channel) {
+        function syncChannelStatusUI(channel, isOffline) {
             if (!channel) return;
+            channel.isOffline = Boolean(isOffline);
+
             if (channel.badgeEl) {
                 const textNode = channel.badgeEl.lastChild;
                 if (channel.isOffline) {
@@ -1422,65 +1543,119 @@
                     }
                 }
             }
-            if (currentChannel && currentChannel.url === channel.url && playerStatusBadge) {
-                if (channel.isOffline) {
-                    playerStatusBadge.classList.add('offline');
-                    playerStatusBadge.innerHTML = `<span class="live-dot"></span> OFFLINE`;
-                } else {
-                    playerStatusBadge.classList.remove('offline');
-                    playerStatusBadge.innerHTML = `<span class="live-dot"></span> EN VIVO`;
+
+            if (currentChannel && currentChannel.url === channel.url) {
+                if (playerStatusBadge) {
+                    if (channel.isOffline) {
+                        playerStatusBadge.classList.add('offline');
+                        playerStatusBadge.innerHTML = `<span class="live-dot"></span> OFFLINE`;
+                    } else {
+                        playerStatusBadge.classList.remove('offline');
+                        playerStatusBadge.innerHTML = `<span class="live-dot"></span> EN VIVO`;
+                    }
+                }
+
+                if (directIndicator && directIndicatorText) {
+                    if (channel.isOffline) {
+                        directIndicator.classList.add('offline');
+                        directIndicatorText.textContent = 'OFFLINE';
+                    } else {
+                        directIndicator.classList.remove('offline');
+                        directIndicatorText.textContent = 'EN VIVO';
+                    }
+                }
+
+                if (liveProgressBar) {
+                    liveProgressBar.classList.toggle('offline', channel.isOffline);
                 }
             }
         }
 
-        function setChannelOfflineState(channel, isOffline) {
-            if (!channel || channel.isOffline === isOffline) return;
-            channel.isOffline = isOffline;
-            updateSingleBadgeDom(channel);
+        function mostrarErrorServidor() {
+            isFatalServerError = true;
+            isStreamDelayed = false;
+            hideLoadingSpinner();
+            errorOverlay.style.opacity = '1';
+            errorOverlay.style.zIndex = '10';
+            errorOverlay.style.pointerEvents = 'auto';
+            if (reloadBtn) reloadBtn.style.display = 'flex';
+            if (currentChannel) {
+                syncChannelStatusUI(currentChannel, true);
+            }
         }
 
-        // COMPROBACIÓN LIGERA EN SEGUNDO PLANO PARA MOSTRAR EN VIVO / OFFLINE AL INGRESAR
+        function ocultarErrorServidor() {
+            isFatalServerError = false;
+            errorOverlay.style.opacity = '0';
+            errorOverlay.style.pointerEvents = 'none';
+        }
+
+        function getCurrentBufferSeconds() {
+            if (!video.buffered || video.buffered.length === 0) return 0;
+            for (let i = video.buffered.length - 1; i >= 0; i--) {
+                const start = video.buffered.start(i);
+                const end = video.buffered.end(i);
+                if (video.currentTime >= start - 0.5 && video.currentTime <= end + 0.5) {
+                    return Math.max(0, end - video.currentTime);
+                }
+            }
+            const lastEnd = video.buffered.end(video.buffered.length - 1);
+            return Math.max(0, lastEnd - video.currentTime);
+        }
+
+        // ANALIZA TODOS LOS CANALES SIN FALSOS OFFLINE POR CORS O LATENCIA
         async function probeChannelStream(channel) {
             if (!channel || !channel.url) {
-                setChannelOfflineState(channel, true);
+                syncChannelStatusUI(channel, true);
                 return;
             }
+
             if (currentChannel && currentChannel.url === channel.url && !isFatalServerError) {
-                setChannelOfflineState(channel, false);
+                const buf = getCurrentBufferSeconds();
+                syncChannelStatusUI(channel, buf < MIN_BUFFER_ONLINE && video.readyState < 3);
                 return;
             }
 
             const controller = new AbortController();
-            const timer = setTimeout(() => controller.abort(), 3500);
+            const timer = setTimeout(() => controller.abort(), 5000);
+
             try {
-                const res = await fetch(channel.url.trim(), {
+                const cleanUrl = channel.url.trim();
+                const res = await fetch(cleanUrl, {
                     method: 'GET',
                     signal: controller.signal,
                     cache: 'no-store'
                 });
                 clearTimeout(timer);
+
                 if (!res.ok) {
-                    setChannelOfflineState(channel, true);
+                    syncChannelStatusUI(channel, true);
                     return;
                 }
+
                 const text = await res.text();
-                const looksLikePlaylist =
+                const hasHlsTags =
                     text.includes('#EXTM3U') ||
                     text.includes('#EXT-X-STREAM-INF') ||
                     text.includes('#EXTINF:');
-                setChannelOfflineState(channel, !looksLikePlaylist);
-            } catch {
+
+                syncChannelStatusUI(channel, !hasHlsTags);
+            } catch (err) {
                 clearTimeout(timer);
-                setChannelOfflineState(channel, true);
+                if (err && err.name === 'AbortError') {
+                    syncChannelStatusUI(channel, true);
+                } else {
+                    syncChannelStatusUI(channel, false);
+                }
             }
         }
 
-        async function checkChannelsLiveStatus() {
-            const batchSize = 5;
+        async function checkAllChannelsStatus() {
+            const batchSize = 6;
             for (let i = 0; i < channels.length; i += batchSize) {
                 const batch = channels.slice(i, i + batchSize);
                 await Promise.all(batch.map(ch => probeChannelStream(ch)));
-                await new Promise(resolve => setTimeout(resolve, 90));
+                await new Promise(resolve => setTimeout(resolve, 100));
             }
         }
 
@@ -1588,15 +1763,12 @@
         });
 
         function setupSubtitleMenu() {
-            subtitlePopupMenu.innerHTML = "";
-            subtitleBtn.classList.remove('cc-active');
+            clearAllSubtitles();
 
             const hlsTracks = (hls && Array.isArray(hls.subtitleTracks)) ? hls.subtitleTracks : [];
             const nativeTextTracks = Array.from(video.textTracks || []).filter(t => t.kind === 'subtitles' || t.kind === 'captions');
 
             if (hlsTracks.length === 0 && nativeTextTracks.length === 0) {
-                subtitleMenuContainer.style.display = 'none';
-                subtitlePopupMenu.classList.remove('show');
                 return;
             }
 
@@ -1707,23 +1879,17 @@
 
             currentChannel = channel;
             qualityPopupMenu.classList.remove('show');
-            subtitlePopupMenu.classList.remove('show');
-            subtitleMenuContainer.style.display = 'none';
             reloadBtn.style.display = 'none';
             lowBufferCount = 0;
-            isStreamBuffering = true;
-            setCenterSpinner(true, "Cargando flujo...");
+            isStreamDelayed = true;
+            showLoadingSpinner(false);
+
+            // Limpia subtítulos antes de destruir o cargar el nuevo flujo
+            clearAllSubtitles();
 
             playerChannelLogo.src = channel.logo || defaultLogo;
             playerChannelName.textContent = channel.name || "Canal";
-
-            if (channel.isOffline) {
-                playerStatusBadge.classList.add('offline');
-                playerStatusBadge.innerHTML = `<span class="live-dot"></span> OFFLINE`;
-            } else {
-                playerStatusBadge.classList.remove('offline');
-                playerStatusBadge.innerHTML = `<span class="live-dot"></span> EN VIVO`;
-            }
+            syncChannelStatusUI(channel, Boolean(channel.isOffline));
 
             ocultarErrorServidor();
             if (channelLoadTimeout) clearTimeout(channelLoadTimeout);
@@ -1747,36 +1913,37 @@
                 if (video.paused || video.readyState < 2) {
                     mostrarErrorServidor();
                 }
-            }, 10000);
+            }, 11000);
 
             video.onplaying = () => {
-                isStreamBuffering = false;
+                isStreamDelayed = false;
                 ocultarErrorServidor();
-                setCenterSpinner(false);
-                setChannelOfflineState(channel, false);
+                hideLoadingSpinner();
                 if (channelLoadTimeout) {
                     clearTimeout(channelLoadTimeout);
                     channelLoadTimeout = null;
                 }
+                const currentBuf = getCurrentBufferSeconds();
+                syncChannelStatusUI(channel, currentBuf < MIN_BUFFER_ONLINE && currentBuf > 0);
             };
 
             video.oncanplay = () => {
                 if (!video.paused && video.readyState >= 3) {
-                    isStreamBuffering = false;
-                    setCenterSpinner(false);
+                    isStreamDelayed = false;
+                    hideLoadingSpinner();
                 }
             };
 
             video.onwaiting = () => {
-                isStreamBuffering = true;
+                isStreamDelayed = true;
                 reloadBtn.style.display = 'flex';
-                setCenterSpinner(true, "Buffer bajo...");
+                showLoadingSpinner(false);
             };
 
             video.onstalled = () => {
-                isStreamBuffering = true;
+                isStreamDelayed = true;
                 reloadBtn.style.display = 'flex';
-                setCenterSpinner(true, "Cargando segmentos...");
+                showLoadingSpinner(false);
             };
 
             video.onerror = () => {
@@ -1785,28 +1952,29 @@
 
             if (typeof Hls !== "undefined" && Hls.isSupported()) {
                 hls = new Hls({
-                    maxBufferLength: 10,
-                    maxMaxBufferLength: 20,
-                    liveSyncDurationCount: 3,
-                    liveMaxLatencyDurationCount: 6,
+                    maxBufferLength: 18,
+                    maxMaxBufferLength: 30,
+                    backBufferLength: 10,
+                    liveSyncDurationCount: 4,
+                    liveMaxLatencyDurationCount: 8,
                     lowLatencyMode: false,
                     enableWorker: true,
                     manifestLoadingTimeOut: 10000,
-                    manifestLoadingMaxRetry: 2,
+                    manifestLoadingMaxRetry: 3,
                     manifestLoadingRetryDelay: 500,
                     levelLoadingTimeOut: 10000,
-                    levelLoadingMaxRetry: 2,
+                    levelLoadingMaxRetry: 3,
                     levelLoadingRetryDelay: 500,
                     fragLoadingTimeOut: 12000,
-                    fragLoadingMaxRetry: 3,
+                    fragLoadingMaxRetry: 4,
                     fragLoadingRetryDelay: 500
                 });
 
                 hls.on(Hls.Events.ERROR, (event, data) => {
                     if (data.type === Hls.ErrorTypes.NETWORK_ERROR || data.details === Hls.ErrorDetails.BUFFER_STALLED_ERROR) {
-                        isStreamBuffering = true;
+                        isStreamDelayed = true;
                         reloadBtn.style.display = 'flex';
-                        setCenterSpinner(true, "Buffer bajo...");
+                        showLoadingSpinner(false);
                     }
 
                     if (!data.fatal) return;
@@ -1825,13 +1993,12 @@
                 });
 
                 hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                    setChannelOfflineState(channel, false);
                     setupQualityMenu();
                     setupSubtitleMenu();
                     video.play().then(() => {
                         updatePlayState(true);
                     }).catch(() => {
-                        setCenterSpinner(false);
+                        hideLoadingSpinner();
                         updatePlayState(false);
                     });
                 });
@@ -1857,12 +2024,11 @@
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                 video.src = channel.url.trim();
                 video.onloadedmetadata = () => {
-                    setChannelOfflineState(channel, false);
                     setupSubtitleMenu();
                     video.play().then(() => {
                         updatePlayState(true);
                     }).catch(() => {
-                        setCenterSpinner(false);
+                        hideLoadingSpinner();
                         updatePlayState(false);
                     });
                 };
@@ -1893,7 +2059,8 @@
             playIcon.style.display = isPlaying ? 'none' : 'block';
             stopIcon.style.display = isPlaying ? 'block' : 'none';
             if (!isPlaying) {
-                setCenterSpinner(false);
+                isStreamDelayed = false;
+                hideLoadingSpinner();
             }
         }
 
@@ -1984,10 +2151,11 @@
         playStopBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             if (video.paused) {
-                if (hls) {
-                    video.currentTime = hls.liveSyncPosition ?? video.duration;
+                if (hls && hls.liveSyncPosition) {
+                    video.currentTime = hls.liveSyncPosition;
                 }
-                setCenterSpinner(true, "Cargando flujo...");
+                isStreamDelayed = true;
+                showLoadingSpinner(false);
                 video.play().then(() => {
                     updatePlayState(true);
                 }).catch(() => {
@@ -2177,36 +2345,39 @@
             }
         });
 
+        // MONITOR DE BUFFER Y ESTADO EN VIVO / OFFLINE (MÍNIMO 5.0s PARA ESTAR EN VIVO)
         setInterval(() => {
             if (!currentChannel || isFatalServerError) return;
 
-            let duration = 0;
-            if (video.buffered.length > 0) {
-                const bufferedEnd = video.buffered.end(video.buffered.length - 1);
-                duration = Math.max(0, bufferedEnd - video.currentTime);
-            }
+            const duration = getCurrentBufferSeconds();
+            bufferValue.textContent = `${duration.toFixed(1)}s`;
 
-            bufferValue.textContent = `Buffer: ${duration.toFixed(1)}s`;
-            const isLowBuffer = duration < 2.0;
-            const isVeryLowBuffer = duration < 1.2;
-            bufferDot.classList.toggle('low', isLowBuffer);
+            const hasHealthyBuffer = duration >= MIN_BUFFER_ONLINE;
+            bufferDot.classList.toggle('low', !hasHealthyBuffer);
 
-            if (!video.paused && (isStreamBuffering || (isVeryLowBuffer && video.readyState < 4))) {
-                setCenterSpinner(true, `Buffer bajo (${duration.toFixed(1)}s)...`);
-            } else if (!isStreamBuffering && duration >= 1.5 && video.readyState >= 3) {
-                setCenterSpinner(false);
-            }
+            if (!video.paused) {
+                if (hasHealthyBuffer && video.readyState >= 3) {
+                    syncChannelStatusUI(currentChannel, false);
+                    isStreamDelayed = false;
+                    hideLoadingSpinner();
+                    lowBufferCount = 0;
+                    reloadBtn.style.display = 'none';
+                } else {
+                    syncChannelStatusUI(currentChannel, true);
+                    lowBufferCount++;
 
-            if (isLowBuffer && !video.paused) {
-                lowBufferCount++;
-                if (lowBufferCount >= 2 || video.readyState < 3) {
-                    reloadBtn.style.display = 'flex';
+                    if (lowBufferCount >= 2 || video.readyState < 3) {
+                        reloadBtn.style.display = 'flex';
+                    }
+
+                    if (isStreamDelayed || duration < 1.5 || video.readyState < 3) {
+                        showLoadingSpinner(false);
+                    }
                 }
-            } else if (duration >= 3.0 && video.readyState >= 3) {
-                lowBufferCount = 0;
-                reloadBtn.style.display = 'none';
+            } else {
+                hideLoadingSpinner();
             }
-        }, 800);
+        }, 700);
 
         document.addEventListener('touchstart', function unmuter() {
             if (video.muted) {
@@ -2246,8 +2417,8 @@
 
                 if (statusScanTimer) clearTimeout(statusScanTimer);
                 statusScanTimer = setTimeout(() => {
-                    checkChannelsLiveStatus();
-                }, 900);
+                    checkAllChannelsStatus();
+                }, 800);
             }
         });
     </script>
